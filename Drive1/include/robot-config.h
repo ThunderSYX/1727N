@@ -10,7 +10,8 @@ extern motor RF;
 extern motor RB;
 extern motor intake;
 extern motor arm;
-extern gyro Gyro;
+extern inertial Inertial;
+extern motor tilter;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
