@@ -14,8 +14,9 @@ motor LB = motor(PORT2, ratio18_1, false);
 motor RF = motor(PORT19, ratio18_1, true);
 motor RB = motor(PORT18, ratio18_1, true);
 motor intake = motor(PORT7, ratio18_1, false);
-motor arm = motor(PORT8, ratio18_1, false);
-gyro Gyro = gyro(Brain.ThreeWirePort.A);
+motor arm = motor(PORT14, ratio18_1, false);
+inertial Inertial = inertial(PORT10);
+motor tilter = motor(PORT16, ratio18_1, false);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
