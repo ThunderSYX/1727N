@@ -2,7 +2,7 @@
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
 /*    Author:       Shiqi Yang                                                */
-/*    Created:      Thu Sep 14 2021                                            */
+/*    Created:      Thu Sep 14 2021                                           */
 /*    Description:  1727N Drive Program                                       */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
@@ -17,7 +17,7 @@
 // intake               motor         7               
 // arm                  motor         14              
 // Inertial             inertial      10              
-// tilter               motor         16              
+// tilter               motor         15              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -79,10 +79,10 @@ void armMacro(int mid, int full){
 void tilterMacro(int down, int up)
 {
   if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(-1*up, degrees);
+    tilter.spinToPosition(up, degrees);
   }
   else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(-1*down, degrees);
+    tilter.spinToPosition(down, degrees);
   }
   else{
     tilter.setStopping(hold);
