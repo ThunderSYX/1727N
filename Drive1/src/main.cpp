@@ -142,11 +142,11 @@ double gkP = 0.05;
 void gturn(double angle){
   while(true){
     double gError = angle - Inertial.orientation(yaw, degrees);
-    if (gError < 3 && gError > -3){
+    if (gError < 3.0 && gError > -3.0){
       return;
     }
     double speed = gError * gkP;
-    tankTest(-0.5*speed, 0.5*speed);
+    tankTest(speed, -speed);
   }
 }
 
@@ -236,7 +236,7 @@ int PID(){
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
-  tank(1800);
+  tank(300);
   gturn(90.0);
 
 //vex::task drivePID(PID);
@@ -284,14 +284,14 @@ int main(){
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
   while(1){
-    //Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
+    Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
 
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
-    Brain.Screen.printAt( 10, 50, "LF %6.1f", LF.position(degrees));
-    Brain.Screen.printAt( 10, 200, "LB %6.1f", LB.position(degrees));
-    Brain.Screen.printAt( 300, 50, "RF %6.1f", RF.position(degrees));
-    Brain.Screen.printAt( 300, 200, "RB %6.1f", RB.position(degrees));
+    //Brain.Screen.printAt( 10, 50, "LF %6.1f", LF.position(degrees));
+    //Brain.Screen.printAt( 10, 200, "LB %6.1f", LB.position(degrees));
+    //Brain.Screen.printAt( 300, 50, "RF %6.1f", RF.position(degrees));
+    //Brain.Screen.printAt( 300, 200, "RB %6.1f", RB.position(degrees));
     vex::this_thread::sleep_for(50);
   }
   Competition.autonomous(autonomous);
