@@ -16,7 +16,7 @@
 // RB                   motor         18              
 // intake               motor         7               
 // arm                  motor         14              
-// Inertial             inertial      10              
+// Inertial             inertial      11              
 // tilter               motor         15              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
@@ -29,6 +29,7 @@ motor_group rightDrive(RF, RB);
 motor_group tankDrive(LF, LB, RF, RB);
 
 bool intakeTrue = false;
+bool toggle = false;
 const int scale = 120;
 void pre_auton(void){
 vexcodeInit();
@@ -43,10 +44,17 @@ void resetEncoders(){
 /////=================================== Driver Control  ===================================/////
 
 void userDrive(){
-rightDrive.spin(fwd, Controller1.Axis2.position(), pct);
-leftDrive.spin(fwd, Controller1.Axis3.position(), pct);
-//RB.spin(fwd, Controller1.Axis2.position(), pct);
-//LB.spin(fwd, Controller1.Axis3.position(), pct);
+  if(toggle == false){
+    rightDrive.spin(fwd, Controller1.Axis2.position(), pct);
+    leftDrive.spin(fwd, Controller1.Axis3.position(), pct);
+  }
+  else if(toggle == true){
+    rightDrive.spin(reverse, Controller1.Axis3.position(), pct);
+    leftDrive.spin(reverse, Controller1.Axis2.position(), pct);
+  }
+  if(Controller1.ButtonLeft.pressing()){
+    toggle = !toggle;
+  }
 }
 
 void armControl(int percent){
@@ -54,38 +62,36 @@ void armControl(int percent){
     arm.spin(fwd, percent, pct);
   }
   else if (Controller1.ButtonR2.pressing()){
-    arm.spin(directionType::rev, percent, pct);
+    arm.spin(reverse, percent, pct);
   }
   else {
-    arm.stop(brake);
+    arm.stop(hold);
   }
 }
 
 void armMacro(int mid, int full){
+  arm.setStopping(hold);
   if(Controller1.ButtonB.pressing()){
-    arm.spinToPosition(0, degrees);
+    arm.spinToPosition(0, degrees, false);
   }
   else if(Controller1.ButtonA.pressing()){
-    arm.spinToPosition(-1*mid, degrees);
+    arm.spinToPosition(mid, degrees, false);
   }
   else if(Controller1.ButtonX.pressing()){
-    arm.spinToPosition(-1*full, degrees);
-  }
-  else{
-    arm.setStopping(hold);
+    arm.spinToPosition(full, degrees, false);
   }
 }
 
-void tilterMacro(int down, int up)
-{
+void tilterMacro(int up, int down){
+  tilter.setStopping(hold);
   if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(up, degrees);
+    tilter.spinToPosition(down, degrees, false);
   }
   else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(down, degrees);
+    tilter.spinToPosition(up, degrees, false);
   }
-  else{
-    tilter.setStopping(hold);
+  else if(Controller1.ButtonRight.pressing()){
+    tilter.spinToPosition(0, degrees, false);
   }
 }
 
@@ -101,7 +107,7 @@ void intakeControl(int percent){
    intake.spin(fwd, percent, pct);
   }
   else if(Controller1.ButtonY.pressing()) {
-    intake.spin(directionType::rev, 100, pct);
+    intake.spin(reverse, 100, pct);
   }
   else {
     intake.setStopping(coast);
@@ -112,32 +118,20 @@ void intakeControl(int percent){
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 /////=================================== Auton Control  ===================================/////
 
-
-void setTank(double l, double r){
-  leftDrive.spin(fwd, l*scale, voltageUnits::mV);
-  //LB.spin(fwd, l*scale, voltageUnits::mV);
-  rightDrive.spin(fwd, r*scale, voltageUnits::mV);
-  //RB.spin(fwd, r*scale, voltageUnits::mV);
+void setIntake(int input){
+  intake.spin(fwd, input*scale, voltageUnits::mV);
 }
 
 void tank(double deg){
   tankDrive.spinToPosition(deg, degrees);
 }
  
-void tankTest(double l, double r){
-  LF.spin(fwd, l, voltageUnits::volt);
-  LB.spin(fwd, l, voltageUnits::volt);
-  RF.spin(fwd, r, voltageUnits::volt);
-  RB.spin(fwd, r, voltageUnits::volt);
+void setTank(double l, double r){
+  leftDrive.spin(fwd, l, volt);
+  rightDrive.spin(fwd, r, volt);
 }
 
-void turn90(int dir){
-  setTank(80*dir, -80*dir);
-  wait(400, msec);
-  setTank(0, 0);
-}
- 
-double gkP = 0.05;
+double gkP = 0.3;
  
 void gturn(double angle){
   while(true){
@@ -146,16 +140,8 @@ void gturn(double angle){
       return;
     }
     double speed = gError * gkP;
-    tankTest(speed, -speed);
+    setTank(speed, -speed);
   }
-}
-
-void holdBrake(){
-  tankDrive.setStopping(hold);
-}
-
-void coastBrake(){
-  tankDrive.setStopping(coast);
 }
 
 double avgPosition(){
@@ -170,26 +156,20 @@ double avgPosition(){
 bool enablePID = false;
 bool resetDrive = false;
 
-double desiredValue;
-double desiredTurn;
+double desVal;
 
-double kP = 0.05;
+double kP = 0.061;
 double kI = 0.0;
-double kD = 0.0;
+double kD = 0.045;
 
-double turnkP = 0.0;
+double turnkP = 0.1;
 double turnkI = 0.0;
 double turnkD = 0.0;
 
-double error;
-double totalError = 0;
-double prevError = 0;
-double drv;
+double error, totalError = 0, prevError = 0, drv;
 
-double turnError;
-double turnTotalError = 0;
-double turnPrevError = 0;
-double turnDrv;
+double turnError, turnTotalError = 0, turnPrevError = 0, turnDrv;
+
 
 int PID(){
   while(enablePID){
@@ -199,83 +179,100 @@ int PID(){
       LB.setPosition(0,degrees);
       RF.setPosition(0,degrees);
       RB.setPosition(0,degrees);
+      Inertial.setRotation(0, degrees);
     }
 
   ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>////
   ///////////////////////////    Lateral    ///////////////////
   ///<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<////
 
-  error = avgPosition() - desiredValue;
+  error = -1*desVal - avgPosition();
   totalError += error;
   drv = error - prevError;
   double lateralPower = (error * kP + totalError * kI + drv * kD);
 
-  ////================================================================////
   ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>////
   ///////////////////////////    Turning    ///////////////////
   ///<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<////
 
-  /*turnError = avgPosition() - desiredValue;
+  turnError = Inertial.orientation(yaw, degrees) - 0.0;
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
-   double turnPower = (turnError * kP + turnTotalError * kI + turnDrv * kD);*/
+   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
 
   ////================================================================////
 
-  //setTank(lateralPower + turnPower, lateralPower - turnPower);
-  tankTest(lateralPower, lateralPower);
-  //leftTank(lateralPower + turnPower);
-  //rightTank(lateralPower - turnPower);
+  setTank(lateralPower - turnPower, lateralPower + turnPower);
   prevError = error;
   turnPrevError = turnError;
+
   vex::task::sleep(20);
   }
-  return 1; 
+  return 1;
+}
+
+void move(double val){
+  resetDrive = true;
+  desVal = val;
 }
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
-  tank(300);
+  tilter.setPosition(0, degrees);
+  enablePID = true;
+  vex::task drivePID(PID);
+
+  move(2000);
+
+  /*
+  move(500);
+  wait(500, msec);
+  setIntake(127);
+  wait(800, msec);
+  setIntake(0);
+
+  move(300);
+
+  vex::task::sleep(800);
+
   gturn(90.0);
+  wait(100, msec);
 
-//vex::task drivePID(PID);
-//resetDrive = true;
-//desiredValue = 100.0;
-//desiredTurn = 0.0;
- 
-//vex::task::sleep(50);
+  move(-600);
+  tilter.spinFor(forward, 670, degrees, false);
 
-/*
-holdBrake();
-setTank(-127, -127);
-wait(300, msec);
-setTank(0, 0);
-wait(300, msec);
-setIntake(127);
-turn90(-1);
-wait(300, msec);
-setTank(-127,-127);
-wait(300, msec);
-turn90(1);
-wait(300, msec);
-setTank(80, 80);
-wait(300, msec);
-setTank(0,0);
-*/
+  vex::task::sleep(1000);
 
+  gturn(0.0);
+  wait(100, msec);
+
+  move(1800);
+
+  vex::task::sleep(3000);
+
+  move(100);
+  vex::task::sleep(800);
+
+  tilter.spinFor(reverse, 350, degrees, false);
+  gturn(40.0);
+  wait(400, msec);
+  setIntake(127);
+  wait(500, msec);
+  setIntake(0);
+  */
 }
+
 void usercontrol(void){
-while (1){
-  userDrive();
-  armMacro(150, 600);
-  tilterMacro(600, 250);
-  armControl(50);
-  intakeControl(90);
-  wait(20, msec);
- }
+  while (1){
+    userDrive();
+    armControl(60);
+    tilterMacro(600, 250);
+    intakeControl(90);  
+    wait(20, msec);
+  }
 }
- 
+
 //double x = Inertial.orientation(roll, degrees);
 //double y = Inertial.orientation(pitch, degrees);
 int main(){
@@ -285,6 +282,7 @@ int main(){
   vex::this_thread::sleep_for(2000);
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
+    Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
 
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
@@ -301,46 +299,3 @@ int main(){
     wait(100, msec);
   }
 }
-
-///// =================================== Unused Bin  =================================== /////
-/*
-void setDrive(int units, int voltage){
-int direction = abs(units)/units;
-resetEncoders();
-Gyro.resetRotation();
-while(avgPosition()< abs(units)){
-  setTank(voltage * direction + Gyro.rotation(degrees), voltage * direction - Gyro.rotation(degrees));
-  this_thread::sleep_for(50);
-}
-setTank(0, 0);
-}
-
-void initialize(){
-coastBrake();
-intake.setStopping(hold);
-armHold();
-}
-
-void gyroTurn(int angle){
-int target = Gyro.value(rotationUnits::deg) + angle;
-int error = 0;
-do{
-  error = Gyro.value(rotationUnits::deg) - target;
-  if(error < 0){
-  //turns right
-  setTank(0, 70);
-  }
-  else{
-  //turns left
-  setTank(70, 0);
-  }
-}
-while(abs(error) < 10);
-holdBrake();
-}
-
-*/
- 
- 
- 
-
