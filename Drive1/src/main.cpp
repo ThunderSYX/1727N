@@ -132,15 +132,15 @@ void setTank(double l, double r){
 }
 
 double gkP = 0.175;
+double gError = 0;
  
 void gturn(double angle){
-  while(true){
-    double gError = angle - Inertial.orientation(yaw, degrees);
-    if (gError < 3.0 && gError > -3.0){
-      return;
-    }
+  gError = angle - Inertial.orientation(yaw, degrees);
+  while(!(gError < 1.0 && gError > -1.0)){
+    gError = angle - Inertial.orientation(yaw, degrees);
     double speed = gError * gkP;
     setTank(speed, -speed);
+    task::sleep(20);
   }
 }
 
