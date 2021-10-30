@@ -131,7 +131,7 @@ void setTank(double l, double r){
   rightDrive.spin(fwd, r, volt);
 }
 
-double gkP = 0.3;
+double gkP = 0.175;
  
 void gturn(double angle){
   while(true){
@@ -223,9 +223,6 @@ void autonomous(void){
   enablePID = true;
   vex::task drivePID(PID);
 
-  move(2000);
-
-  /*
   move(500);
   wait(500, msec);
   setIntake(127);
@@ -259,8 +256,7 @@ void autonomous(void){
   wait(400, msec);
   setIntake(127);
   wait(500, msec);
-  setIntake(0);
-  */
+  setIntake(0); 
 }
 
 void usercontrol(void){
