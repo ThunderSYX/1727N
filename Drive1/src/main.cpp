@@ -105,12 +105,15 @@ void intakeControl(int percent){
   }
   if (intakeTrue){
    intake.spin(fwd, percent, pct);
+   intake2.spin(fwd, percent, pct);
   }
   else if(Controller1.ButtonY.pressing()) {
     intake.spin(reverse, 100, pct);
+    intake2.spin(reverse, 100, pct);
   }
   else {
     intake.setStopping(coast);
+    intake2.setStopping(coast);
   }
 }
 
