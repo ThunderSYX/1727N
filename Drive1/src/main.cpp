@@ -233,7 +233,7 @@ void autonomous(void){
   wait(800, msec);
   setIntake(0);
 
-  move(300);
+  move(-300);
 
   vex::task::sleep(800);
 
@@ -256,6 +256,7 @@ void autonomous(void){
   vex::task::sleep(800);
 
   tilter.spinFor(reverse, 350, degrees, false);
+  wait(500, msec);
   gturn(40.0);
   wait(400, msec);
   setIntake(127);
@@ -283,6 +284,7 @@ int main(){
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
+   Brain.Screen.printAt( 240, 120, "fucking hate vex");
 
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
