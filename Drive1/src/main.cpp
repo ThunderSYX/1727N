@@ -139,7 +139,7 @@ double gError = 0;
  
 void gturn(double angle){
   gError = angle - Inertial.orientation(yaw, degrees);
-  while(!(gError < 1.0 && gError > -1.0)){
+  while(!(gError < 3.0 && gError > -3.0)){
     gError = angle - Inertial.orientation(yaw, degrees);
     double speed = gError * gkP;
     setTank(speed, -speed);
