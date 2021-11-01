@@ -9,6 +9,7 @@ extern motor LB;
 extern motor RF;
 extern motor RB;
 extern motor intake;
+extern motor intake2;
 extern motor arm;
 extern inertial Inertial;
 extern motor tilter;
