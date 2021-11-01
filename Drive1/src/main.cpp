@@ -15,6 +15,7 @@
 // RF                   motor         19              
 // RB                   motor         18              
 // intake               motor         7               
+// intake2              motor         11
 // arm                  motor         14              
 // Inertial             inertial      11              
 // tilter               motor         15              
