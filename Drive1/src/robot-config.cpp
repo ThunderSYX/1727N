@@ -13,11 +13,11 @@ motor LF = motor(PORT9, ratio18_1, false);
 motor LB = motor(PORT2, ratio18_1, false);
 motor RF = motor(PORT19, ratio18_1, true);
 motor RB = motor(PORT18, ratio18_1, true);
-motor intake = motor(PORT7, ratio18_1, false);
-motor intake2 = motor(PORT11, ratio18_1, false);
+motor intake1 = motor(PORT7, ratio18_1, false);
 motor arm = motor(PORT14, ratio18_1, false);
 inertial Inertial = inertial(PORT10);
-motor tilter = motor(PORT16, ratio18_1, false);
+motor tilter = motor(PORT15, ratio18_1, false);
+motor intake2 = motor(PORT11, ratio18_1, false);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

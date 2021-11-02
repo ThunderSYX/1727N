@@ -14,11 +14,11 @@
 // LB                   motor         2               
 // RF                   motor         19              
 // RB                   motor         18              
-// intake               motor         7               
-// intake2              motor         11
+// intake1              motor         7               
 // arm                  motor         14              
-// Inertial             inertial      11              
+// Inertial             inertial      10              
 // tilter               motor         15              
+// intake2              motor         11              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -27,6 +27,7 @@ competition Competition;
  
 motor_group leftDrive(LF, LB);
 motor_group rightDrive(RF, RB);
+motor_group intake(intake1, intake2);
 motor_group tankDrive(LF, LB, RF, RB);
 
 bool intakeTrue = false;
@@ -106,15 +107,13 @@ void intakeControl(int percent){
   }
   if (intakeTrue){
    intake.spin(fwd, percent, pct);
-   intake2.spin(fwd, percent, pct);
   }
   else if(Controller1.ButtonY.pressing()) {
     intake.spin(reverse, 100, pct);
-    intake2.spin(reverse, 100, pct);
   }
   else {
     intake.setStopping(coast);
-    intake2.setStopping(coast);
+    
   }
 }
 
@@ -135,16 +134,16 @@ void setTank(double l, double r){
   rightDrive.spin(fwd, r, volt);
 }
 
-double gkP = 0.175;
-double gError = 0;
+double gkP = 0.25;
  
 void gturn(double angle){
-  gError = angle - Inertial.orientation(yaw, degrees);
-  while(!(gError < 3.0 && gError > -3.0)){
-    gError = angle - Inertial.orientation(yaw, degrees);
+  while(true){
+    double gError = angle - Inertial.orientation(yaw, degrees);
+    if (gError < 3.0 && gError > -3.0){
+      return;
+    }
     double speed = gError * gkP;
     setTank(speed, -speed);
-    task::sleep(20);
   }
 }
 
@@ -202,7 +201,7 @@ int PID(){
   turnError = Inertial.orientation(yaw, degrees) - 0.0;
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
-   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
+  double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
 
   ////================================================================////
 
@@ -256,12 +255,11 @@ void autonomous(void){
   vex::task::sleep(800);
 
   tilter.spinFor(reverse, 350, degrees, false);
-  wait(500, msec);
   gturn(40.0);
   wait(400, msec);
   setIntake(127);
   wait(500, msec);
-  setIntake(0); 
+  setIntake(0);
 }
 
 void usercontrol(void){
@@ -284,7 +282,7 @@ int main(){
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
-   Brain.Screen.printAt( 240, 120, "fucking hate vex");
+    Brain.Screen.printAt( 240, 120, "fucking hate vex");
 
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
