@@ -275,8 +275,13 @@ void usercontrol(void){
 //double x = Inertial.orientation(roll, degrees);
 //double y = Inertial.orientation(pitch, degrees);
 int main(){
-  Brain.Screen.setFont(mono60);
-  Brian.Screen.printAt(160,140, "1727N");
+ Brain.Screen.setFont(mono20);
+  Brain.Screen.printAt(160,176,"  __  _______  _____   _______  ____  _____  ");
+  Brain.Screen.printAt(160,156," /  ||  ___  |/ ___ `.|  ___  ||_   \|_   _| ");
+  Brain.Screen.printAt(160,136," `| ||_/  / /|_/___) ||_/  / /   |   \ | |   ");
+  Brain.Screen.printAt(160,116,"  | |    / /  .'____.'    / /    | |\ \| |   ");
+  Brain.Screen.printAt(160,96, " _| |_  / /  / /_____    / /    _| |_\   |_  ");
+  Brain.Screen.printAt(160,76, "|_____|/_/   |_______|  /_/    |_____|\____| ");
   Brain.Screen.setFont(mono40);
   resetEncoders();
   Inertial.startCalibration();
