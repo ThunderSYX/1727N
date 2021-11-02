@@ -275,6 +275,8 @@ void usercontrol(void){
 //double x = Inertial.orientation(roll, degrees);
 //double y = Inertial.orientation(pitch, degrees);
 int main(){
+ Brain.Screen.setFont(mono60);
+   Brian.Screen.printAt(340,140, "1727N");
   Brain.Screen.setFont(mono40);
   resetEncoders();
   Inertial.startCalibration();
@@ -283,7 +285,7 @@ int main(){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
     Brain.Screen.printAt( 240, 120, "fucking hate vex");
-    Brian.Screen.printAt(340,140, "1727N");
+    
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
     //Brain.Screen.printAt( 10, 50, "LF %6.1f", LF.position(degrees));
