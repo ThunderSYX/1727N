@@ -16,7 +16,7 @@
 // RB                   motor         18              
 // intake1              motor         7               
 // arm                  motor         14              
-// Inertial             inertial      10              
+// Inertial             inertial      12              
 // tilter               motor         15              
 // intake2              motor         11              
 // ---- END VEXCODE CONFIGURED DEVICES ----
@@ -60,14 +60,15 @@ void userDrive(){
 }
 
 void armControl(int percent){
+  arm.setStopping(hold);
   if (Controller1.ButtonR1.pressing()){
     arm.spin(fwd, percent, pct);
   }
   else if (Controller1.ButtonR2.pressing()){
     arm.spin(reverse, percent, pct);
   }
-  else {
-    arm.stop(hold);
+  else if (!arm.isSpinning()){
+    arm.stop();
   }
 }
 
@@ -87,13 +88,26 @@ void armMacro(int mid, int full){
 void tilterMacro(int up, int down){
   tilter.setStopping(hold);
   if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(down, degrees, false);
+    tilter.spinToPosition(-down, degrees, false);
   }
   else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(up, degrees, false);
+    tilter.spinToPosition(-up, degrees, false);
   }
   else if(Controller1.ButtonRight.pressing()){
     tilter.spinToPosition(0, degrees, false);
+  }
+}
+
+void tilterControl(int percent){
+  tilter.setStopping(hold);
+  if (Controller1.ButtonX.pressing()){
+    tilter.spin(fwd, percent, pct);
+  }
+  else if (Controller1.ButtonB.pressing()){
+    tilter.spin(reverse, percent, pct);
+  }
+  else if (!tilter.isSpinning()){
+    tilter.stop();
   }
 }
 
@@ -266,8 +280,9 @@ void usercontrol(void){
   while (1){
     userDrive();
     armControl(60);
-    tilterMacro(600, 250);
-    intakeControl(90);  
+    tilterMacro(450, 680);
+    tilterControl(35);
+    intakeControl(75);  
     wait(20, msec);
   }
 }
@@ -275,21 +290,23 @@ void usercontrol(void){
 //double x = Inertial.orientation(roll, degrees);
 //double y = Inertial.orientation(pitch, degrees);
 int main(){
- Brain.Screen.setFont(mono20);
-  Brain.Screen.printAt(160,176,"  __  _______  _____   _______  ____  _____  ");
-  Brain.Screen.printAt(160,156," /  ||  ___  |/ ___ `.|  ___  ||_   \|_   _| ");
-  Brain.Screen.printAt(160,136," `| ||_/  / /|_/___) ||_/  / /   |   \ | |   ");
-  Brain.Screen.printAt(160,116,"  | |    / /  .'____.'    / /    | |\ \| |   ");
-  Brain.Screen.printAt(160,96, " _| |_  / /  / /_____    / /    _| |_\   |_  ");
-  Brain.Screen.printAt(160,76, "|_____|/_/   |_______|  /_/    |_____|\____| ");
+ 
   Brain.Screen.setFont(mono40);
   resetEncoders();
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
+  
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
-    Brain.Screen.printAt( 240, 120, "fucking hate vex");
+    Brain.Screen.setFont(monoS);
+    Brain.Screen.printAt(140,70, "  __  _______  _____   _______  ____  _____  ");
+    Brain.Screen.printAt(140,90, " /  ||  ___  |/ ___ `.|  ___  ||_   \\|_   _| ");
+    Brain.Screen.printAt(140,110," `| ||_/  / /|_/___) ||_/  / /   |   \\ | |   ");
+    Brain.Screen.printAt(140,130,"  | |    / /  .'____.'    / /    | |\\ \\| |   ");
+    Brain.Screen.printAt(140,150," _| |_  / /  / /_____    / /    _| |_\\   |_  ");
+    Brain.Screen.printAt(140,170,"|_____|/_/   |_______|  /_/    |_____|\\____| ");
+    Brain.Screen.setFont(mono40);
     
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
 
