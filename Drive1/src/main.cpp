@@ -36,7 +36,26 @@ const int scale = 120;
 void pre_auton(void){
 vexcodeInit();
 }
+typedef struct button  {
+  int xpos;
+  int ypos;
+  int width;
+  int height;
+  bool state;
+  vex::color color;
+} button;
 
+button buttons[] = {
+  {30, 30, 20, 20, false, 0x808080},
+  {30, 60, 20, 20, false, 0x808080},
+  {60, 30, 20, 20, false, 0x808080},
+  {60, 60, 20, 20, false, 0x808080},
+  {90, 30, 20, 20, false, 0x808080}
+};
+
+void buttonPressed(int xpos, int ypos) {
+  
+}
 void resetEncoders(){
   tankDrive.setPosition(0, degrees);
   arm.setPosition(0, degrees);
@@ -130,6 +149,7 @@ void intakeControl(int percent){
     
   }
 }
+
 
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
@@ -282,7 +302,7 @@ void usercontrol(void){
     armControl(60);
     tilterMacro(450, 680);
     tilterControl(35);
-    intakeControl(75);  
+    intakeControl(65);  
     wait(20, msec);
   }
 }
