@@ -275,8 +275,8 @@ void usercontrol(void){
 //double x = Inertial.orientation(roll, degrees);
 //double y = Inertial.orientation(pitch, degrees);
 int main(){
- Brain.Screen.setFont(mono60);
-   Brian.Screen.printAt(340,140, "1727N");
+  Brain.Screen.setFont(mono60);
+  Brian.Screen.printAt(340,140, "1727N");
   Brain.Screen.setFont(mono40);
   resetEncoders();
   Inertial.startCalibration();
