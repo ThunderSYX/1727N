@@ -1,16 +1,75 @@
-void autonButton(int x, int y, int width, int height){
+int autonSelect;
+void autonButton(int x, int y, int width, int height, String text){
   Brain.Screen.drawRectangle(x, y, width, height);
+  Brain.Screen.printAt(x + width/2, y + height/2, text);
 }
 
-void checkAutonPress() {
-  if (Brain.Screen.pressing()) {
-    if ((Brain.Screen.xPosition() >= 280 &&
-         Brain.Screen.xPosition() <= 280 + 125) &&
-        (Brain.Screen.yPosition() >= 80 &&
-         Brain.Screen.yPosition() <= 80 + 75)) {
-      auton();
+void checkAutonPress(int x, int y, int width, int height, int select) {
+    if (Brain.Screen.pressing()) {
+      if ((Brain.Screen.xPosition() >= 280 &&
+           Brain.Screen.xPosition() <= 280 + 120) &&
+          (Brain.Screen.yPosition() >= 80 &&
+           Brain.Screen.yPosition() <= 80 + 75)) {
+           autonSelect = select;
+          
     }
   }
+}
+
+void autonomous(void){
+  switch(autonSelect)
+  {
+    case 0:
+      tilter.setPosition(0, degrees);
+      enablePID = true;
+      vex::task drivePID(PID);
+
+      move(500);
+      wait(500, msec);
+      setIntake(127);
+      wait(800, msec);
+      setIntake(0);
+
+      move(-300);
+
+      vex::task::sleep(800);
+
+      gturn(90.0);
+      wait(100, msec);
+
+      move(-600);
+      tilter.spinFor(forward, 670, degrees, false);
+
+      vex::task::sleep(1000);
+
+      gturn(0.0);
+      wait(100, msec);
+
+      move(1800);
+
+      vex::task::sleep(3000);
+
+      move(100);
+      vex::task::sleep(800);
+
+      tilter.spinFor(reverse, 350, degrees, false);
+      gturn(40.0);
+      wait(400, msec);
+      setIntake(127);
+      wait(500, msec);
+      setIntake(0);
+      break;
+    case 1:
+      
+      break;
+    case 2:
+      
+      break;
+    default:
+      
+  
+  }
+  
 }
 
 int main(){
@@ -18,12 +77,14 @@ int main(){
   resetEncoders();
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
-  autonButton(280, 80, 120, 75);
-  Brain.Screen.printAt(280, 100, "Auton");
+  autonButton(280, 80, 75, 75, "Auton1");
+  autonButton(200, 80, 75, 75, "Auton2");
+  autonButton(360, 80, 75, 75, "Auton3");
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
-    Brain.Screen.pressed(checkAutonPress);
+    Brain.Screen.pressed(checkAutonPress(280,80,75,75,0); checkAutonPress(200,80,75,75,1); checkAutonPress(360,80,75,75,2));
+    
 
     vex::this_thread::sleep_for(50);
   }
