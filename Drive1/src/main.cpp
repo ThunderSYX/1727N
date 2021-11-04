@@ -33,29 +33,27 @@ motor_group tankDrive(LF, LB, RF, RB);
 bool intakeTrue = false;
 bool toggle = false;
 const int scale = 120;
+int drivePct;
 void pre_auton(void){
 vexcodeInit();
 }
 
-typedef struct button  {
-  int xpos;
-  int ypos;
-  int width;
-  int height;
-  bool state;
-  vex::color color;
-} button;
+int autonSelect;
 
-button buttons[] = {
-  {30, 30, 20, 20, false, 0x808080},
-  {30, 60, 20, 20, false, 0x808080},
-  {60, 30, 20, 20, false, 0x808080},
-  {60, 60, 20, 20, false, 0x808080},
-  {90, 30, 20, 20, false, 0x808080}
-};
+void autonButton(int x, int y, int width, int height, std::string text){
+  Brain.Screen.drawRectangle(x, y, width, height);
+  Brain.Screen.printAt(x + width/2, y + height/2, text.c_str());
+}
 
-void buttonPressed(int xpos, int ypos) {
-  
+void checkAutonPress(int x, int y, int width, int height, int select) {
+  if (Brain.Screen.pressing()) {
+    if ((Brain.Screen.xPosition() >= 280 &&
+      Brain.Screen.xPosition() <= 280 + 120) &&
+      (Brain.Screen.yPosition() >= 80 &&
+      Brain.Screen.yPosition() <= 80 + 75)) {
+      autonSelect = select;
+    }
+  }
 }
 
 void resetEncoders(){
@@ -68,12 +66,12 @@ void resetEncoders(){
 
 void userDrive(){
   if(toggle == false){
-    rightDrive.spin(fwd, Controller1.Axis2.position(), pct);
-    leftDrive.spin(fwd, Controller1.Axis3.position(), pct);
+    rightDrive.spin(fwd, Controller1.Axis2.position()*drivePct, pct);
+    leftDrive.spin(fwd, Controller1.Axis3.position()*drivePct, pct);
   }
   else if(toggle == true){
-    rightDrive.spin(reverse, Controller1.Axis3.position(), pct);
-    leftDrive.spin(reverse, Controller1.Axis2.position(), pct);
+    rightDrive.spin(reverse, Controller1.Axis3.position()*drivePct, pct);
+    leftDrive.spin(reverse, Controller1.Axis2.position()*drivePct, pct);
   }
   if(Controller1.ButtonLeft.pressing()){
     toggle = !toggle;
@@ -129,13 +127,14 @@ void intakeControl(int percent){
   }
   if (intakeTrue){
    intake.spin(fwd, percent, pct);
+   drivePct = 70;
   }
   else if(Controller1.ButtonY.pressing()) {
     intake.spin(reverse, 100, pct);
   }
   else {
     intake.setStopping(coast);
-    
+    drivePct = 100;
   }
 }
 
@@ -262,20 +261,20 @@ void autonomous(void){
   enablePID = true;
   vex::task drivePID(PID);
 
-  move(500);
+  move(490);
   wait(500, msec);
   setIntake(127);
   wait(800, msec);
   setIntake(0);
 
-  move(-300);
+  move(-320);
 
   vex::task::sleep(800);
 
   gturn(90.0);
   wait(100, msec);
 
-  move(-600);
+  move(-670);
   tilter.spinFor(forward, 670, degrees, false);
 
   vex::task::sleep(1000);
@@ -283,16 +282,16 @@ void autonomous(void){
   gturn(0.0);
   wait(100, msec);
 
-  move(1800);
+  move(2620);
 
   vex::task::sleep(3000);
 
-  move(100);
-  vex::task::sleep(800);
-
   tilter.spinFor(reverse, 350, degrees, false);
-  gturn(40.0);
   wait(400, msec);
+  
+  move(-300);
+  vex::task::sleep(800);
+  
   setIntake(127);
   wait(500, msec);
   setIntake(0);
@@ -317,6 +316,9 @@ int main(){
   resetEncoders();
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
+  autonButton(280, 80, 75, 75, "Auton1");
+  autonButton(200, 80, 75, 75, "Auton2");
+  autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
