@@ -36,7 +36,13 @@ bool toggle = false;
 const int scale = 120;
 const int maxVel = 10;
 
-int drivePct;
+const int armPct = 60;
+const int intakePct = 55;
+const int tilterPct = 35;
+const int tilterPosMid = 450;
+const int tilterPosLow = 680;
+
+double drivePct;
 
 void pre_auton(void){
   vexcodeInit();
@@ -82,46 +88,46 @@ void userDrive(){
   }
 }
 
-void armControl(int percent){
+void armControl(){
   arm.setStopping(hold);
   if (Controller1.ButtonR1.pressing()){
-    arm.spin(fwd, percent, pct);
+    arm.spin(fwd, armPct, pct);
   }
   else if (Controller1.ButtonR2.pressing()){
-    arm.spin(reverse, percent, pct);
+    arm.spin(reverse, armPct, pct);
   }
   else if (!arm.isSpinning()){
     arm.stop();
   }
 }
 
-void tilterMacro(int up, int down){
+void tilterMacro(){
   tilter.setStopping(hold);
   if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(-down, degrees, false);
+    tilter.spinToPosition(-tilterPosLow, degrees, false);
   }
   else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(-up, degrees, false);
+    tilter.spinToPosition(-tilterPosMid, degrees, false);
   }
   else if(Controller1.ButtonRight.pressing()){
     tilter.spinToPosition(0, degrees, false);
   }
 }
 
-void tilterControl(int percent){
+void tilterControl(){
   tilter.setStopping(hold);
   if (Controller1.ButtonX.pressing()){
-    tilter.spin(fwd, percent, pct);
+    tilter.spin(fwd, tilterPct, pct);
   }
   else if (Controller1.ButtonB.pressing()){
-    tilter.spin(reverse, percent, pct);
+    tilter.spin(reverse, tilterPct, pct);
   }
   else if (!tilter.isSpinning()){
     tilter.stop();
   }
 }
 
-void intakeControl(int percent){
+void intakeControl(){
   if (Controller1.ButtonL1.pressing()){
    intakeTrue = true;
   }
@@ -130,15 +136,15 @@ void intakeControl(int percent){
    intake.stop();
   }
   if (intakeTrue){
-   intake.spin(fwd, percent, pct);
-   drivePct = 70;
+   intake.spin(fwd, intakePct, pct);
+   drivePct = 0.7;
   }
   else if(Controller1.ButtonY.pressing()) {
     intake.spin(reverse, 100, pct);
   }
   else {
     intake.setStopping(coast);
-    drivePct = 100;
+    drivePct = 1;
   }
 }
 
@@ -195,6 +201,35 @@ void gturn(double angle) {
     }
   }
 }
+
+/*
+void gturn(double angle){
+  while(true){
+    double gError = angle - Inertial.orientation(yaw, degrees);
+    if (gError < 3.0 && gError > -3.0){
+      startTime.reset();
+      if (startTime.time(msec) == 300 && gError < 3.0 && gError > -3.0){
+        break;
+      }
+    }
+    double speed = gError * gkP;
+    if (speed > maxVel){
+      speed = maxVel;
+    }
+    setTank(speed, -speed);
+  }
+}
+
+void gturn(double angle){
+  gError = angle - Inertial.orientation(yaw, degrees);
+  while(!(gError < 3.0 && gError > -3.0)){
+    gError = angle - Inertial.orientation(yaw, degrees);
+    double speed = gError * gkP;
+    setTank(speed, -speed);
+    task::sleep(20);
+  }
+}
+*/
 
 double leftPosition(){
   return (LF.position(degrees) + LB.position(degrees))/2;
@@ -318,13 +353,12 @@ void autonomous(void){
   wait(500, msec);
   setIntake(0);
  
-  /*
-
+/*
   tankDrive.spinTo(490, degrees);
   tankDrive.setPosition(0, degrees);
 
   wait(500, msec);
-  setIntake(127);
+  setIntake(55);
   wait(800, msec);
   setIntake(0);
 
@@ -339,8 +373,6 @@ void autonomous(void){
 
   tilter.spinFor(forward, 670, degrees, false);
 
-  vex::task::sleep(1000);
-
   gturn(0.0);
   wait(100, msec);
 
@@ -353,19 +385,68 @@ void autonomous(void){
   tankDrive.spinTo(-300, degrees);
   tankDrive.setPosition(0, degrees);
   
-  setIntake(127);
+  setIntake(55);
   wait(500, msec);
   setIntake(0);
-  */
+*/
+
+  //======================================= Right Side =======================================//  
+/*
+  tilter.spinFor(fwd, 670, degrees, false);
+
+  tankDrive.spinTo(400, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  tilter.spinToPosition(450, degrees);
+
+  setIntake(55);
+  wait(1000, msec);
+  setIntake(0);
+
+  gturn(120);
+  wait(300, msec);
+
+  setIntake(55);
+
+  tankDrive.setVelocity(60, pct);
+
+  tankDrive.spinTo(-1800, degrees);
+  tankDrive.setPosition(0, degrees);
+
+
+  tankDrive.setVelocity(80, pct);
+
+  tankDrive.spinTo(2000, degrees);
+
+  setIntake(0);
+
+  tilter.stop(coast);
+*/
+  //=======================================------------=======================================//
+
+  //======================================= Left Side ========================================//
+/*
+  tankDrive.spinTo(490, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  wait(500, msec);
+  setIntake(55);
+  wait(800, msec);
+  setIntake(0);
+
+  tankDrive.spinTo(-320, degrees);
+  tankDrive.setPosition(0, degrees);
+*/
+  //=======================================-----------========================================//
 }
 
 void usercontrol(void){
   while (1){
     userDrive();
-    armControl(60);
-    tilterMacro(450, 680);
-    tilterControl(35);
-    intakeControl(55);  
+    armControl();
+    tilterMacro();
+    tilterControl();
+    intakeControl();  
     wait(20, msec);
   }
 }
@@ -384,7 +465,8 @@ int main(){
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
-    Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
+    Brain.Screen.printAt( 10, 150, "Left %6.1f", leftPosition());
+    Brain.Screen.printAt( 10, 250, "Right %6.1f", rightPosition());
     Brain.Screen.setFont(monoS);
     //Brain.Screen.printAt(140,70, "  __  _______  _____   _______  ____  _____  ");
     //Brain.Screen.printAt(140,90, " /  ||  ___  |/ ___ `.|  ___  ||_   \\|_   _| ");
