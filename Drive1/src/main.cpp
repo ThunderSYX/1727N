@@ -32,10 +32,14 @@ motor_group tankDrive(LF, LB, RF, RB);
 
 bool intakeTrue = false;
 bool toggle = false;
+
 const int scale = 120;
+const int maxVel = 10;
+
 int drivePct;
+
 void pre_auton(void){
-vexcodeInit();
+  vexcodeInit();
 }
 
 int autonSelect;
@@ -47,10 +51,10 @@ void autonButton(int x, int y, int width, int height, std::string text){
 
 void checkAutonPress(int x, int y, int width, int height, int select) {
   if (Brain.Screen.pressing()) {
-    if ((Brain.Screen.xPosition() >= 280 &&
-      Brain.Screen.xPosition() <= 280 + 120) &&
-      (Brain.Screen.yPosition() >= 80 &&
-      Brain.Screen.yPosition() <= 80 + 75)) {
+    if ((Brain.Screen.xPosition() >= x &&
+      Brain.Screen.xPosition() <= x + width) &&
+      (Brain.Screen.yPosition() >= y &&
+      Brain.Screen.yPosition() <= y + height)) {
       autonSelect = select;
     }
   }
@@ -139,12 +143,11 @@ void intakeControl(int percent){
 }
 
 
-
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 /////=================================== Auton Control  ===================================/////
 
 void setIntake(int input){
-  intake.spin(fwd, input*scale, voltageUnits::mV);
+  intake.spin(fwd, input, pct);
 }
 
 void tank(double deg){
@@ -157,24 +160,39 @@ void setTank(double l, double r){
 }
 
 double gkP = 0.3;
-int maxVel = 10;
 
 timer startTime;
 
-void gturn(double angle){
-  while(true){
+void gturn(double angle) {
+  bool right = signbit(-angle);
+  while (true) {
     double gError = angle - Inertial.orientation(yaw, degrees);
-    if (gError < 5.0 && gError > -5.0){
+
+    if (gError < 3.0 && gError > -3.0) {
       startTime.reset();
-      if (startTime.time(msec) == 300 && gError < 3.0 && gError > -3.0){
+      if (startTime.time(msec) == 300 && gError < 3.0 && gError > -3.0) {
         break;
       }
     }
-    double speed = gError * gkP;
-    if (speed > maxVel){
-      speed = maxVel;
+
+    else {
+      double speed = gError * gkP;
+      double leftCorrection = 0.0;
+      double rightCorrection = 0.0;
+      double motorError = leftDrive.position(degrees) + rightDrive.position(degrees); 
+
+      if ((right && signbit(-motorError)) || (!right && signbit(motorError))) {
+        rightCorrection =  motorError * 0.5;
+      } 
+      else if ((right && signbit(motorError)) || (right && signbit(-motorError))) {
+        leftCorrection = motorError * 0.5;
+      }
+
+      if (speed > maxVel) {
+        speed = maxVel;
+      }
+      setTank(speed + leftCorrection, -speed + rightCorrection);
     }
-    setTank(speed, -speed);
   }
 }
 
@@ -263,7 +281,7 @@ void autonomous(void){
 
   move(490);
   wait(500, msec);
-  setIntake(127);
+  setIntake(55);
   wait(800, msec);
   setIntake(0);
 
@@ -292,6 +310,43 @@ void autonomous(void){
   move(-300);
   vex::task::sleep(800);
   
+  setIntake(55);
+  wait(500, msec);
+  setIntake(0);
+
+  tankDrive.spinTo(490, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  wait(500, msec);
+  setIntake(127);
+  wait(800, msec);
+  setIntake(0);
+
+  tankDrive.spinTo(-320, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  gturn(90.0);
+  wait(100, msec);
+
+  tankDrive.spinTo(-670, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  tilter.spinFor(forward, 670, degrees, false);
+
+  vex::task::sleep(1000);
+
+  gturn(0.0);
+  wait(100, msec);
+
+  tankDrive.spinTo(2620, degrees);
+  tankDrive.setPosition(0, degrees);
+
+  tilter.spinFor(reverse, 350, degrees, false);
+  wait(400, msec);
+  
+  tankDrive.spinTo(-300, degrees);
+  tankDrive.setPosition(0, degrees);
+  
   setIntake(127);
   wait(500, msec);
   setIntake(0);
@@ -303,7 +358,7 @@ void usercontrol(void){
     armControl(60);
     tilterMacro(450, 680);
     tilterControl(35);
-    intakeControl(65);  
+    intakeControl(55);  
     wait(20, msec);
   }
 }
@@ -316,9 +371,9 @@ int main(){
   resetEncoders();
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
-  autonButton(280, 80, 75, 75, "Auton1");
-  autonButton(200, 80, 75, 75, "Auton2");
-  autonButton(360, 80, 75, 75, "Auton3");
+  //autonButton(280, 80, 75, 75, "Auton1");
+  //autonButton(200, 80, 75, 75, "Auton2");
+  //autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
