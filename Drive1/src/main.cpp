@@ -196,8 +196,12 @@ void gturn(double angle) {
   }
 }
 
-double avgPosition(){
-  return (LF.position(degrees) + LB.position(degrees) + RF.position(degrees) + RB.position(degrees))/4;
+double leftPosition(){
+  return (LF.position(degrees) + LB.position(degrees))/2;
+}
+
+double rightPosition(){
+  return (LF.position(degrees) + LB.position(degrees))/2;
 }
 
 
@@ -236,12 +240,12 @@ int PID(){
   ///////////////////////////    Lateral    ///////////////////
   ///<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<////
 
-  lError = -1*desVal - avgPosition();
+  lError = -1*desVal - leftPosition();
   lTotalError += lError;
   lDrv = lError - lPrevError;
   double leftPower = (lError * kP + lTotalError * kI + lDrv * kD);
 
-  rError = -1*desVal - avgPosition();
+  rError = -1*desVal - rightPosition();
   rTotalError += rError;
   rDrv = rError - rPrevError; 
   double rightPower = (rError * kP + rTotalError * kI + rDrv * kD);
@@ -313,6 +317,8 @@ void autonomous(void){
   setIntake(55);
   wait(500, msec);
   setIntake(0);
+ 
+  /*
 
   tankDrive.spinTo(490, degrees);
   tankDrive.setPosition(0, degrees);
@@ -350,6 +356,7 @@ void autonomous(void){
   setIntake(127);
   wait(500, msec);
   setIntake(0);
+  */
 }
 
 void usercontrol(void){
@@ -379,12 +386,12 @@ int main(){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 200, "AVG %6.1f", avgPosition());
     Brain.Screen.setFont(monoS);
-    Brain.Screen.printAt(140,70, "  __  _______  _____   _______  ____  _____  ");
-    Brain.Screen.printAt(140,90, " /  ||  ___  |/ ___ `.|  ___  ||_   \\|_   _| ");
-    Brain.Screen.printAt(140,110," `| ||_/  / /|_/___) ||_/  / /   |   \\ | |   ");
-    Brain.Screen.printAt(140,130,"  | |    / /  .'____.'    / /    | |\\ \\| |   ");
-    Brain.Screen.printAt(140,150," _| |_  / /  / /_____    / /    _| |_\\   |_  ");
-    Brain.Screen.printAt(140,170,"|_____|/_/   |_______|  /_/    |_____|\\____| ");
+    //Brain.Screen.printAt(140,70, "  __  _______  _____   _______  ____  _____  ");
+    //Brain.Screen.printAt(140,90, " /  ||  ___  |/ ___ `.|  ___  ||_   \\|_   _| ");
+    //Brain.Screen.printAt(140,110," `| ||_/  / /|_/___) ||_/  / /   |   \\ | |   ");
+    //Brain.Screen.printAt(140,130,"  | |    / /  .'____.'    / /    | |\\ \\| |   ");
+    //Brain.Screen.printAt(140,150," _| |_  / /  / /_____    / /    _| |_\\   |_  ");
+    //Brain.Screen.printAt(140,170,"|_____|/_/   |_______|  /_/    |_____|\\____| ");
     Brain.Screen.setFont(mono40);
     
     //Brain.Screen.printAt( 10, 50, "Arm %6.1f", arm.position(degrees));
