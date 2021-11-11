@@ -10,13 +10,13 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// LF                   motor         18              
+// LF                   motor         9               
 // LB                   motor         2               
 // RF                   motor         19              
-// RB                   motor         9               
+// RB                   motor         18              
 // intake1              motor         7               
 // arm                  motor         14              
-// Inertial             inertial      13              
+// Inertial             inertial      12              
 // tilter               motor         15              
 // intake2              motor         11              
 // bump                 limit         A               
@@ -136,16 +136,15 @@ void tilterControl(){
 
 void intakeControl(){
   if (Controller1.ButtonUp.pressing()){
-   intakeTrue = true;
+    intakeTrue = true;
   }
   else if (Controller1.ButtonDown.pressing()){
-   intakeTrue = false;
-   drivePct = 1;
-   intake.stop();
+    intakeTrue = false;
+    intake.stop();
   }
   if (intakeTrue){
-   intake.spin(fwd, intakePct, pct);
-   drivePct = 0.7;
+    intake.spin(fwd, intakePct, pct);
+    drivePct = 0.7;
   }
   else if(Controller1.ButtonRight.pressing()) {
     intake.spin(reverse, 100, pct);
@@ -264,6 +263,7 @@ bool enablePID = false;
 bool resetDrive = false;
 
 double desVal;
+double desTurn;
 
 double kP = 0.061;
 double kI = 0.0;
@@ -285,6 +285,7 @@ int PID(){
     if (resetDrive) {
       leftDrive.setPosition(0, degrees);
       rightDrive.setPosition(0, degrees);
+      Inertial.setRotation(0, degrees);
       resetDrive = false;
     }
 
@@ -316,7 +317,7 @@ int PID(){
   ///////////////////////////    Turning    ///////////////////
   ///<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<////
 
-  turnError = Inertial.orientation(yaw, degrees) - 0.0;
+  turnError = Inertial.orientation(yaw, degrees) - desTurn;
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
@@ -333,10 +334,13 @@ int PID(){
   return 1;
 }
 
-void move(double val){
+void move(double val, double turns){
   resetDrive = true;
   desVal = val;
+  desTurn = turns;
 }
+
+bool done = LF.isDone();
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
@@ -350,13 +354,13 @@ void autonomous(void){
   switch(autonSelect)
   {
     case 0:
-      move(490);
+      move(490, 0.0);
       wait(500, msec);
       setIntake(55);
       wait(800, msec);
       setIntake(0);
 
-      move(-320);
+      move(-320, 0.0);
       wait(500, msec);
       break; 
     case 1:
@@ -369,7 +373,7 @@ void autonomous(void){
 
   
 
-  vex::task::suspend(drivePID);
+  waitUntil(LF.isDone());
 /*
   gturn(90.0);
   vex::task::sleep(3000);
