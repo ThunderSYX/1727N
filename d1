@@ -392,12 +392,16 @@ void autonomous(void){
   setIntake(55);
   wait(800, msec);
   setIntake(0);
+  
+  arm.spinToPosition(-highArm, degrees);
 
   resetDrive();
   PID(230, 0.0);
 
-  arm.spinToPosition(-highArm, degrees);
-  tilter.spinFor(reverse, 100, degrees);
+  tilter.spinFor(reverse, 300, degrees);
+  
+  resetDrive();
+  PID(-200, 0.0);
 
   //PID(-320, 0.0);
   //vex::task::suspend(drivePID);
@@ -417,26 +421,27 @@ void autonomous(void){
 
   vex::task::sleep(4000);
 
-  tilter.spinFor(fwd, 350, degrees, false);
-  wait(400, msec);
+  //tilter.spinFor(fwd, 350, degrees, false);
+  //wait(400, msec);
   
-  resetDrive();
-  PID(-400, 0.0);
+  //resetDrive();
+  //PID(-400, 0.0);
   //move(300, 90.0);
-  vex::task::sleep(800);
+  //vex::task::sleep(800);
   
-  setIntake(55);
-  wait(500, msec);
-  setIntake(0);
+  //setIntake(55);
+  //wait(500, msec);
+  //setIntake(0);
 
   
 
 
   //======================================= Right Side =======================================//  
 /*
-  tilter.spinFor(fwd, 670, degrees, false);
-
-  move(400, 0.0);
+  tilter.spinFor(fwd, 670, degrees);
+ 
+  resetDrive();
+  PID(400, 0.0);
   vex::task::sleep(800, msec);
 
   tilter.spinToPosition(450, degrees);
