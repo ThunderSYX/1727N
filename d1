@@ -436,7 +436,7 @@ void autonomous(void){
 /*
   tilter.spinFor(fwd, 670, degrees, false);
 
-  move(400);
+  move(400, 0.0);
   vex::task::sleep(800, msec);
 
   tilter.spinToPosition(450, degrees);
@@ -448,37 +448,19 @@ void autonomous(void){
   gturn(120);
   wait(300, msec);
 
-  vex::suspend(drivePID);
-
-  tankDrive.setVelocity(60, pct);
+  leftDrive.setVelocity(60, pct);
+  rightDrive.setVelocity(60, pct);
   leftDrive.spinTo(-1800, degrees);
   rightDrive.spinTo(-1800, degrees);
 
-  tankDrive.setVelocity(80, pct);
+  leftDrive.setVelocity(80, pct);
+  rightDrive.setVelocity(80, pct);
 
   leftDrive.spinTo(2000, degrees);
   rightDrive.spinTo(2000, degrees);
 
-  setIntake(0);
-
   tilter.stop(coast);
 */
-  //=======================================------------=======================================//
-
-  //======================================= Left Side ========================================//
-/*
-  tankDrive.spinTo(490, degrees);
-  tankDrive.setPosition(0, degrees);
-
-  wait(500, msec);
-  setIntake(55);
-  wait(800, msec);
-  setIntake(0);
-
-  tankDrive.spinTo(-320, degrees);
-  tankDrive.setPosition(0, degrees);
-*/
-  //=======================================-----------========================================//
 }
 
 void usercontrol(void){
