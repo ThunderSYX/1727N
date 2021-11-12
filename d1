@@ -44,7 +44,7 @@ const int tilterPosMid = 300;
 const int tilterPosLow = 680;
 const int highArm = 700;
 
-double drivePct;
+double drivePct = 1;
 
 void pre_auton(void){
   vexcodeInit();
@@ -76,6 +76,8 @@ void resetEncoders(){
 
 /////=================================== Driver Control  ===================================/////
 
+bool slow = false;
+
 void userDrive(){
   if(toggle == false){
     rightDrive.spin(reverse, Controller1.Axis2.position()*drivePct, pct);
@@ -87,6 +89,16 @@ void userDrive(){
   }
   if(Controller1.ButtonLeft.pressing()){
     toggle = !toggle;
+    
+  }
+  if(Controller1.ButtonA.pressing()){
+    slow = !slow;
+  }
+  if(slow){
+    drivePct = 0.6;
+  }
+  else{
+    drivePct = 0.6;
   }
 }
 
@@ -139,7 +151,7 @@ void intakeControl(){
   }
   if (intakeTrue){
    intake.spin(fwd, intakePct, pct);
-   drivePct = 0.7;
+   drivePct = 0.6;
   }
   else if(Controller1.ButtonY.pressing()) {
     intake.spin(reverse, 100, pct);
