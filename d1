@@ -291,6 +291,7 @@ void resetDrive(){
   RB.setPosition(0, degrees);
 }
 
+int time1 = 0;
 
 void PID(int desVal, double desTurn){
   while(true){
@@ -339,15 +340,19 @@ void PID(int desVal, double desTurn){
     rightPower = maxVel;
   }
 
-  setTank(leftPower - turnPower, rightPower + turnPower);
+  setTank(leftPower + turnPower, rightPower - turnPower);
   lPrevError = lError;
   rPrevError = rError;
   turnPrevError = turnError;
 
 
-  if((lError < 7 && lError > -7) || (rError < 7 && rError > -7)){
-    break;
+  if((lError < 7 && lError > -7) && (rError < 7 && rError > -7)){
+    time1+=20;
+    if (time1/1000 > 1){
+      break;
+    }
   }
+  else {time1 = 0;}
 
   vex::task::sleep(20);
   }
