@@ -89,10 +89,11 @@ void userDrive(){
   }
   if(Controller1.ButtonLeft.pressing()){
     toggle = !toggle;
-    
+    this_thread::sleep_for(500ms);
   }
   if(Controller1.ButtonA.pressing()){
     slow = !slow;
+    this_thread::sleep_for(500ms);
   }
   if(slow){
     drivePct = 0.6;
