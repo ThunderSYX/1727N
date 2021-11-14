@@ -79,6 +79,12 @@ void resetEncoders(){
 bool slow = false;
 
 void userDrive(){
+  float maxSpeed = 127;
+  float leftPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
+  float rightPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
+
+  float leftNewPct = leftPct * leftPct *leftPct;
+  float rightNewPct = rightPct *rightPct *rightPct;
   if(slow){
     drivePct = 0.45;
   }
@@ -86,8 +92,8 @@ void userDrive(){
     drivePct = 1;
   }
   if(toggle == false){
-    rightDrive.spin(reverse, Controller1.Axis2.position()*drivePct, pct);
-    leftDrive.spin(reverse, Controller1.Axis3.position()*drivePct, pct);
+    rightDrive.spin(reverse, leftNewPct, pct);
+    leftDrive.spin(reverse, rightNewPct, pct);
   }
   else if(toggle == true){
     rightDrive.spin(fwd, Controller1.Axis3.position()*drivePct, pct);
@@ -95,7 +101,7 @@ void userDrive(){
   }
   if(Controller1.ButtonLeft.pressing()){
     toggle = !toggle;
-    this_thread::sleep_for(500);
+    this_thread::sleep_for(300);
   }
 }
 
