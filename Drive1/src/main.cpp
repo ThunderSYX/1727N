@@ -378,40 +378,21 @@ void autonomous(void){
   tilter.setStopping(hold);
   tilter.setPosition(0, degrees);
   arm.setPosition(0, degrees);
-
-  //enablePID = true;
-  //vex::task drivePID(PID);
-  /*switch(autonSelect)
-  {
-    case 0:
-      
-      break; 
-    case 1:
-
-      break;
-    case 2:
-
-      break;
-  }*/
-
-//  tilter.setVelocity(70, pct);
-  resetDrive();
-
-  //tilter.spinFor(reverse, 735, degrees, false);
-
-  PID(1400, 0.0);
+  //====================================LEFT====================================//
+  tilter.setVelocity(70, pct);
   
-  //tilter.setVelocity(35, pct);
-  //tilter.spinFor(fwd, 300, degrees);
+  tilter.spinFor(reverse, 735, degrees, false);
 
+  PID(500, 0.0);
+ 
+  tilter.setVelocity(35, pct);
+  tilter.spinFor(fwd, 300, degrees);
+ 
+  setIntake(60);
+  wait(1500, msec);
+  setIntake(0);
 
-  //setIntake(60);
- // wait(1500, msec);
-  //setIntake(0);
-
-  
-
-  /*arm.setVelocity(70, pct);
+  arm.setVelocity(70, pct);
   arm.spinFor(highArm, degrees);
 
   resetDrive();
@@ -425,7 +406,9 @@ void autonomous(void){
   arm.spinFor(-920, degrees);
   gturn(-70);
   
+  //====================================----====================================//
   
+  // Solo I think
   //PID(-320, 0.0);
   //vex::task::suspend(drivePID);
 
@@ -459,7 +442,7 @@ void autonomous(void){
 
 
   //======================================= Right Side =======================================//  
-
+  /*
   tilter.setVelocity(70, pct);
   tilter.spinFor(reverse, 720, degrees);
  
@@ -495,6 +478,44 @@ void autonomous(void){
 
   tilter.stop(coast);
   */
+ 
+  //=======================================SKILLS======================================//
+  /* 
+  tilter.spinFor(reverse, lowTilt, degrees);
+
+  move(500, 0.0);
+
+  tilter.spinFor(reverse, midTilt, degrees);
+
+  setIntake(55);
+  wait(800, msec);
+  setIntake(0);
+  
+  stack(230, -200, 0.0);
+ 
+  gturn(90.0);
+
+  move(-2600, 90);
+
+  move(300, 90);
+
+  gturn(0);
+  
+  move(500, 0.0);
+
+  gturn(-90);
+
+  stack(200, -300, -90);
+  
+  gturn(90);
+
+  move(800, -90);
+  tilter.spinFor(midTilt, degrees);
+
+  move(800, -90);
+
+  stack(200, -300, -90);
+  */
 }
 
 void usercontrol(void){
@@ -510,8 +531,6 @@ void usercontrol(void){
   }
 }
 
-//double x = Inertial.orientation(roll, degrees);
-//double y = Inertial.orientation(pitch, degrees);
 int main(){
  
   Brain.Screen.setFont(mono40);
@@ -526,9 +545,9 @@ int main(){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
     Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
-    //Brain.Screen.printAt( 220, 125, "lP %6.1f", lP);
-    //Brain.Screen.printAt( 200, 200, "rP %6.1f", rP);
-    Brain.Screen.setFont(monoS);
+    Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
+    Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
+    //Brain.Screen.setFont(monoS);
     //checkAutonPress(280, 80, 75, 75, 0);
     //checkAutonPress(200, 80, 75, 75, 1);
     //checkAutonPress(360, 80, 75, 75, 2);
