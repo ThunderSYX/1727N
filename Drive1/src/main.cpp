@@ -78,13 +78,19 @@ void resetEncoders(){
 
 bool slow = false;
 
-void userDrive(){
-  float maxSpeed = 127;
-  float leftPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
-  float rightPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
+float maxSpeed = 100;
+float leftPct;
+float rightPct;
 
-  float leftNewPct = leftPct * leftPct *leftPct;
-  float rightNewPct = rightPct *rightPct *rightPct;
+float leftNewPct;
+float rightNewPct;
+
+void userDrive(){
+  rightPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
+  leftPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
+
+  leftNewPct = leftPct * leftPct * leftPct * 100;
+  rightNewPct = rightPct * rightPct * rightPct * 100;
   if(slow){
     drivePct = 0.45;
   }
@@ -92,8 +98,8 @@ void userDrive(){
     drivePct = 1;
   }
   if(toggle == false){
-    rightDrive.spin(reverse, leftNewPct, pct);
-    leftDrive.spin(reverse, rightNewPct, pct);
+    rightDrive.spin(reverse, rightNewPct, pct);
+    leftDrive.spin(reverse, leftNewPct, pct);
   }
   else if(toggle == true){
     rightDrive.spin(fwd, Controller1.Axis3.position()*drivePct, pct);
@@ -549,10 +555,10 @@ int main(){
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
-    Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
-    Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
-    Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
-    Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
+    Brain.Screen.printAt( 10, 125, "Left %6.1f", leftNewPct);
+    Brain.Screen.printAt( 10, 200, "Right %6.1f", rightNewPct);
+    Brain.Screen.printAt( 250, 125, "left %6.1f", leftPct);
+    Brain.Screen.printAt( 250, 200, "right %6.1f", rightPct);
     //Brain.Screen.setFont(monoS);
     //checkAutonPress(280, 80, 75, 75, 0);
     //checkAutonPress(200, 80, 75, 75, 1);
