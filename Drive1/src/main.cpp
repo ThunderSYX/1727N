@@ -383,6 +383,17 @@ void PID(int desVal, double desTurn){
   //desTurn = turns;
 //}
 
+void stack(double fwd, double back, double ang){
+  arm.spinFor(-highArm, degrees);
+  resetDrive();
+  PID(fwd, ang);
+  tilter.spinFor(midTilt, degrees);
+  resetDrive();
+  PID(back, ang);
+  arm.spinFor(highArm, degrees);
+  tilter.spinToPosition(lowTilt, degrees);
+}
+
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
