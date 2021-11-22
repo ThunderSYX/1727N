@@ -303,6 +303,8 @@ double lP, rP, lI, rI, lD, rD;
 
 double turnError, turnTotalError = 0, turnPrevError = 0, turnDrv;
 
+double wheelDiff;
+
 void resetDrive(){
   LF.setPosition(0, degrees);
   RF.setPosition(0, degrees);
@@ -349,14 +351,21 @@ void PID(int desVal, double desTurn){
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
+  wheelDiff = (leftPosition())-(rightPosition());
 
   ////================================================================////
 
   if(leftPower > maxVel){
-    leftPower = maxVel;
+    leftPower = maxVel - wheelDiff;
+  }
+  else {
+    leftPower -= wheelDiff;
   }
   if(rightPower > maxVel){
-    rightPower = maxVel;
+    rightPower = maxVel + wheelDiff;
+  }
+  else {
+    rightPower += wheelDiff;
   }
 
   setTank(leftPower + turnPower, rightPower - turnPower);
@@ -365,7 +374,7 @@ void PID(int desVal, double desTurn){
   turnPrevError = turnError;
 
 
-  if((lError < 7 && lError > -7) && (rError < 7 && rError > -7)){
+  if((lError < 5 && lError > -5) && (rError < 5 && rError > -5)){
     break;
   }
   else if (time1/1000 > 1.5){
