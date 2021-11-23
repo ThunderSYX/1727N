@@ -11,15 +11,14 @@
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
 // LF                   motor         9               
-// LB                   motor         2               
-// RF                   motor         19              
+// LB                   motor         19              
+// RF                   motor         2               
 // RB                   motor         18              
-// intake1              motor         7               
+// intake               motor         20              
 // arm                  motor         14              
 // Inertial             inertial      12              
 // tilter               motor         15              
-// intake2              motor         11              
-// bump                 limit         A               
+// angler               motor         7               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -28,7 +27,6 @@ competition Competition;
  
 motor_group leftDrive(LF, LB);
 motor_group rightDrive(RF, RB);
-motor_group intake(intake1, intake2);
 motor_group tankDrive(LF, LB, RF, RB);
 
 bool intakeTrue = false;
@@ -37,7 +35,7 @@ bool toggle = false;
 const int maxVel = 8;
 
 const int armPct = 60;
-const int intakePct = 60;
+const int intakePct = 80;
 const int tilterPct = 45;
 const int midTilt = 300;
 const int lowTilt = 680;
@@ -78,12 +76,12 @@ void resetEncoders(){
 bool slow = false;
 
 void userDrive(){
-  float maxSpeed = 127;
+  float maxSpeed = 100;
   float leftPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
   float rightPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
 
-  float leftNewPct = leftPct * leftPct *leftPct;
-  float rightNewPct = rightPct *rightPct *rightPct;
+  float leftNewPct = leftPct * leftPct *leftPct*100;
+  float rightNewPct = rightPct *rightPct *rightPct*100;
   if(slow){
     drivePct = 0.45;
   }
@@ -152,6 +150,19 @@ void tilterControl(){
   }
 }
 
+void anglerControl(){
+  angler.setStopping(hold);
+  if (Controller1.ButtonUp.pressing()){
+    angler.spin(fwd, tilterPct, pct);
+  }
+  else if (Controller1.ButtonDown.pressing()){
+    angler.spin(reverse, tilterPct, pct);
+  }
+  else if (!angler.isSpinning()){
+    angler.stop();
+  }
+}
+
 void intakeControl(){
   if (Controller1.ButtonL1.pressing()){
    intakeTrue = true;
@@ -161,8 +172,7 @@ void intakeControl(){
    intake.stop();
   }
   if (intakeTrue){
-   intake1.spin(fwd, intakePct, pct);
-   intake2.spin(fwd, intakePct*0.9, pct);
+   intake.spin(fwd, intakePct, pct);
    drivePct = 0.6;
   }
   else if(Controller1.ButtonY.pressing()) {
@@ -431,7 +441,7 @@ void usercontrol(void){
     enablePID = false;
     userDrive();
     armControl();
-    tilterMacro();
+    //tilterMacro();
     tilterControl();
     intakeControl();  
     wait(20, msec);
@@ -454,8 +464,8 @@ int main(){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
     Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
-    Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
-    Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
+    //Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
+    //Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
     Brain.Screen.setFont(monoS);
     //checkAutonPress(280, 80, 75, 75, 0);
     //checkAutonPress(200, 80, 75, 75, 1);
