@@ -34,14 +34,13 @@ motor_group tankDrive(LF, LB, RF, RB);
 bool intakeTrue = false;
 bool toggle = false;
 
-const int scale = 120;
 const int maxVel = 8;
 
 const int armPct = 60;
 const int intakePct = 60;
 const int tilterPct = 45;
-const int tilterPosMid = 300;
-const int tilterPosLow = 680;
+const int midTilt = 300;
+const int lowTilt = 680;
 const int highArm = 1200;
 
 double drivePct = 1;
@@ -78,19 +77,13 @@ void resetEncoders(){
 
 bool slow = false;
 
-float maxSpeed = 100;
-float leftPct;
-float rightPct;
-
-float leftNewPct;
-float rightNewPct;
-
 void userDrive(){
-  rightPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
-  leftPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
+  float maxSpeed = 127;
+  float leftPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
+  float rightPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
 
-  leftNewPct = leftPct * leftPct * leftPct * 100;
-  rightNewPct = rightPct * rightPct * rightPct * 100;
+  float leftNewPct = leftPct * leftPct *leftPct;
+  float rightNewPct = rightPct *rightPct *rightPct;
   if(slow){
     drivePct = 0.45;
   }
@@ -98,8 +91,8 @@ void userDrive(){
     drivePct = 1;
   }
   if(toggle == false){
-    rightDrive.spin(reverse, rightNewPct, pct);
-    leftDrive.spin(reverse, leftNewPct, pct);
+    rightDrive.spin(reverse, leftNewPct, pct);
+    leftDrive.spin(reverse, rightNewPct, pct);
   }
   else if(toggle == true){
     rightDrive.spin(fwd, Controller1.Axis3.position()*drivePct, pct);
@@ -136,10 +129,10 @@ void armControl(){
 void tilterMacro(){
   tilter.setStopping(hold);
   if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(-tilterPosLow, degrees, false);
+    tilter.spinToPosition(-lowTilt, degrees, false);
   }
   else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(-tilterPosMid, degrees, false);
+    tilter.spinToPosition(-midTilt, degrees, false);
   }
   else if(Controller1.ButtonRight.pressing()){
     tilter.spinToPosition(0, degrees, false);
@@ -206,27 +199,23 @@ void gturn(double angle) {
   bool right = signbit(-angle);
   while (true) {
     double gError = angle - Inertial.orientation(yaw, degrees);
-
     if (gError < 3.0 && gError > -3.0) {
       startTime.reset();
       if (startTime.time(msec) == 300 && gError < 3.0 && gError > -3.0) {
         break;
       }
     }
-
     else {
       double speed = gError * gkP;
       double leftCorrection = 0.0;
       double rightCorrection = 0.0;
       double motorError = leftDrive.position(degrees) + rightDrive.position(degrees); 
-
       if ((right && signbit(-motorError)) || (!right && signbit(motorError))) {
         rightCorrection =  motorError * 0.5;
       } 
       else if ((right && signbit(motorError)) || (right && signbit(-motorError))) {
         leftCorrection = motorError * 0.5;
       }
-
       if (speed > maxVel) {
         speed = maxVel;
       }
@@ -286,9 +275,6 @@ double rightPosition(){
 
 bool enablePID = false;
 
-//double desVal;
-//double desTurn;
-
 double kP = 0.071;
 double kI = 0.0;
 double kD = 0.15;
@@ -302,8 +288,6 @@ double rError, rTotalError = 0, rPrevError = 0, rDrv;
 double lP, rP, lI, rI, lD, rD;
 
 double turnError, turnTotalError = 0, turnPrevError = 0, turnDrv;
-
-double wheelDiff;
 
 void resetDrive(){
   LF.setPosition(0, degrees);
@@ -351,21 +335,14 @@ void PID(int desVal, double desTurn){
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
-  wheelDiff = (leftPosition())-(rightPosition());
 
   ////================================================================////
 
   if(leftPower > maxVel){
-    leftPower = maxVel - wheelDiff;
-  }
-  else {
-    leftPower -= wheelDiff;
+    leftPower = maxVel;
   }
   if(rightPower > maxVel){
-    rightPower = maxVel + wheelDiff;
-  }
-  else {
-    rightPower += wheelDiff;
+    rightPower = maxVel;
   }
 
   setTank(leftPower + turnPower, rightPower - turnPower);
@@ -374,7 +351,7 @@ void PID(int desVal, double desTurn){
   turnPrevError = turnError;
 
 
-  if((lError < 5 && lError > -5) && (rError < 5 && rError > -5)){
+  if((lError < 7 && lError > -7) && (rError < 7 && rError > -7)){
     break;
   }
   else if (time1/1000 > 1.5){
@@ -386,11 +363,11 @@ void PID(int desVal, double desTurn){
   }
 }
 
-//void move(double val, double turns){
-  //resetDrive = true;
-  //desVal = val;
-  //desTurn = turns;
-//}
+
+void move(double val, double turns){
+  resetDrive();
+  PID(val, turns);
+}
 
 void stack(double fwd, double back, double ang){
   arm.spinFor(-highArm, degrees);
@@ -410,109 +387,7 @@ void autonomous(void){
   tilter.setStopping(hold);
   tilter.setPosition(0, degrees);
   arm.setPosition(0, degrees);
-  //====================================LEFT====================================//
-  tilter.setVelocity(70, pct);
-  
-  tilter.spinFor(reverse, 735, degrees, false);
 
-  PID(500, 0.0);
- 
-  tilter.setVelocity(35, pct);
-  tilter.spinFor(fwd, 300, degrees);
- 
-  setIntake(60);
-  wait(1500, msec);
-  setIntake(0);
-
-  arm.setVelocity(70, pct);
-  arm.spinFor(highArm, degrees);
-
-  resetDrive();
-  PID(300, 0.0);
-  arm.spinFor(-250, degrees);
-  wait(1000, msec);
-  tilter.spinFor(reverse, 300, degrees);
-  wait(500, msec);
-  PID(-400, 0.0);
-
-  arm.spinFor(-920, degrees);
-  gturn(-70);
-  
-  //====================================----====================================//
-  
-  // Solo I think
-  //PID(-320, 0.0);
-  //vex::task::suspend(drivePID);
-
-  //gturn(90.0);
-  //vex::task::resume(drivePID);
-
-  //PID(-670, 90.0);
-  //vex::task::suspend(drivePID);
- 
-  //tilter.spinFor(reverse, 670, degrees, false);
-
-  //gturn(0.0);
-  //wait(100, msec);
-
-  //move(2620, 0);
-
-
-  //tilter.spinFor(fwd, 350, degrees, false);
-  //wait(400, msec);
-  
-  //resetDrive();
-  //PID(-400, 0.0);
-  //move(300, 90.0);
-  //vex::task::sleep(800);
-  
-  //setIntake(55);
-  //wait(500, msec);
-  //setIntake(0);
-
-  
-
-
-  //======================================= Right Side =======================================//  
-  /*
-  tilter.setVelocity(70, pct);
-  tilter.spinFor(reverse, 720, degrees);
- 
-  resetDrive();
-  PID(900, 0.0);
-  vex::task::sleep(800);
-
-
-  tilter.spinFor(fwd, 300, degrees);
-
-  setIntake(55);
-  wait(1000, msec);
-  
-  PID(-600, 0.0);
-  */
-
-  /*
-  gturn(120);
-  wait(300, msec);
-
-  leftDrive.setVelocity(60, pct);
-  rightDrive.setVelocity(60, pct);
-  leftDrive.spinTo(-1800, degrees, false);
-  rightDrive.spinTo(-1800, degrees, false);
-
-  leftDrive.setVelocity(80, pct);
-  rightDrive.setVelocity(80, pct);
-
-  setIntake(0);
-
-  leftDrive.spinTo(2000, degrees, false);
-  rightDrive.spinTo(2000, degrees, false);
-
-  tilter.stop(coast);
-  */
- 
-  //=======================================SKILLS======================================//
-  /* 
   tilter.spinFor(reverse, lowTilt, degrees);
 
   move(500, 0.0);
@@ -539,15 +414,15 @@ void autonomous(void){
 
   stack(200, -300, -90);
   
-  gturn(90);
+  gturn(0);
 
   move(800, -90);
-  tilter.spinFor(midTilt, degrees);
+  tilter.spinFor(lowTilt, degrees);
+  
 
   move(800, -90);
 
   stack(200, -300, -90);
-  */
 }
 
 void usercontrol(void){
@@ -563,6 +438,8 @@ void usercontrol(void){
   }
 }
 
+//double x = Inertial.orientation(roll, degrees);
+//double y = Inertial.orientation(pitch, degrees);
 int main(){
  
   Brain.Screen.setFont(mono40);
@@ -575,11 +452,11 @@ int main(){
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
-    Brain.Screen.printAt( 10, 125, "Left %6.1f", leftNewPct);
-    Brain.Screen.printAt( 10, 200, "Right %6.1f", rightNewPct);
-    Brain.Screen.printAt( 250, 125, "left %6.1f", leftPct);
-    Brain.Screen.printAt( 250, 200, "right %6.1f", rightPct);
-    //Brain.Screen.setFont(monoS);
+    Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
+    Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
+    Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
+    Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
+    Brain.Screen.setFont(monoS);
     //checkAutonPress(280, 80, 75, 75, 0);
     //checkAutonPress(200, 80, 75, 75, 1);
     //checkAutonPress(360, 80, 75, 75, 2);

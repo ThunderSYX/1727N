@@ -12,8 +12,8 @@ extern motor intake1;
 extern motor arm;
 extern inertial Inertial;
 extern motor tilter;
-extern motor intake2;
 extern limit bump;
+extern motor hindTilter;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
