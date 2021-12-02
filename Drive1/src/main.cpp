@@ -47,24 +47,6 @@ void pre_auton(void){
   vexcodeInit();
 }
 
-int autonSelect;
-
-void autonButton(int x, int y, int width, int height, std::string text){
-  Brain.Screen.drawRectangle(x, y, width, height);
-  Brain.Screen.printAt(x + width/2, y + height/2, text.c_str());
-}
-
-void checkAutonPress(int x, int y, int width, int height, int select) {
-  if (Brain.Screen.pressing()) {
-    if ((Brain.Screen.xPosition() >= x &&
-      Brain.Screen.xPosition() <= x + width) &&
-      (Brain.Screen.yPosition() >= y &&
-      Brain.Screen.yPosition() <= y + height)) {
-      autonSelect = select;
-    }
-  }
-}
-
 void resetEncoders(){
   tankDrive.setPosition(0, degrees);
   arm.setPosition(0, degrees);
@@ -448,17 +430,13 @@ void usercontrol(void){
   }
 }
 
-//double x = Inertial.orientation(roll, degrees);
-//double y = Inertial.orientation(pitch, degrees);
+
 int main(){
  
   Brain.Screen.setFont(mono40);
   resetEncoders();
   Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
-  //autonButton(280, 80, 75, 75, "Auton1");
-  //autonButton(200, 80, 75, 75, "Auton2");
-  //autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
     Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
@@ -467,9 +445,6 @@ int main(){
     //Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
     //Brain.Screen.printAt( 250, 200, "rER %6.1f", rError);
     Brain.Screen.setFont(monoS);
-    //checkAutonPress(280, 80, 75, 75, 0);
-    //checkAutonPress(200, 80, 75, 75, 1);
-    //checkAutonPress(360, 80, 75, 75, 2);
     //Brain.Screen.printAt(140,70, "  __  _______  _____   _______  ____  _____  ");
     //Brain.Screen.printAt(140,90, " /  ||  ___  |/ ___ `.|  ___  ||_   \\|_   _| ");
     //Brain.Screen.printAt(140,110," `| ||_/  / /|_/___) ||_/  / /   |   \\ | |   ");
