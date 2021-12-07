@@ -19,6 +19,7 @@
 // Inertial             inertial      13              
 // tilter               motor         15              
 // angler               motor         7               
+// Piston               digital_out   A               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -65,6 +66,16 @@ void userDrive(){
   }
     rightDrive.spin(fwd, rightNewPct, pct);
     leftDrive.spin(fwd, leftNewPct, pct);
+}
+
+void pistonControl(){
+  if(Controller1.ButtonUp.pressing()){
+    Piston.set(true);
+  }
+  else {
+    Piston.set(false);
+  }
+  wait(20,msec);
 }
 
 void toggleSlow(){

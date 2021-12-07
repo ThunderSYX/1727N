@@ -18,6 +18,7 @@ motor arm = motor(PORT14, ratio18_1, true);
 inertial Inertial = inertial(PORT13);
 motor tilter = motor(PORT15, ratio18_1, true);
 motor angler = motor(PORT7, ratio18_1, false);
+digital_out Piston = digital_out(Brain.ThreeWirePort.A);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
