@@ -8,12 +8,11 @@ extern motor LF;
 extern motor LB;
 extern motor RF;
 extern motor RB;
-extern motor intake1;
+extern motor intake;
 extern motor arm;
 extern inertial Inertial;
 extern motor tilter;
-extern limit bump;
-extern motor hindTilter;
+extern motor angler;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
