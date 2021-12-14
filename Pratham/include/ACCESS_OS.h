@@ -27,7 +27,7 @@
 
 //Define max entries in 2d array for easy coding
 #define maxMenus			3		//Make this the same # as items in maxMenusIndex
-#define maxOptions			10		//Make this the same # as items in 2D of menuDisplayIndex
+#define maxOptions			3		//Make this the same # as items in 2D of menuDisplayIndex
 
 //Define robot status for easy coding
 #define modeDisabled		0
@@ -81,8 +81,8 @@ private:
 	int maxMenusIndex[maxMenus] =
 	{
 		2,
-		4,
-		9
+		1,
+		3
 	};
 
 	//1D Array for default selected options.
@@ -91,23 +91,23 @@ private:
 	{
 		0,
 		0,
-		1
+		0
 	};
 
 	//1D array for displaying the menu types
 	std::string menuTypes[maxMenus] =
 	{
 		"Color: ",
-		"Pos: ",
-		"Pnts: "
+		"Type: ",
+		"Side: "
 	};
 
 	//2D array for displaying the menu options
 	std::string menuOptions[maxMenus][maxOptions] =
 	{
 		{ "Red", "Blue" }, //If "" doesn't work, try "NULL"
-		{ "Front", "Back",	"Skills",	"Brain" },
-		{ "1", "3", "4", "5", "6", "7", "8",  "18", "40" }
+		{ "Drive" },
+		{ "Left", "Right", "Skills" }
 	};
 public:
 	ACCESS_OS();											//???

@@ -4,6 +4,7 @@ void battery_check()
 {
   while(1)
   {
+    Brain.Screen.clearScreen();
     if(Brain.Battery.capacity() > 60)
     {
       Brain.Screen.setFillColor(vex::green);
@@ -19,7 +20,7 @@ void battery_check()
       Brain.Screen.setFillColor(vex::red);
       Brain.Screen.setPenColor(vex::black);
     }
-    Brain.Screen.print("Battery Percent%: %d", Brain.Battery.capacity());
+    Brain.Screen.printAt(0, 15, "Battery Percent%: %d", Brain.Battery.capacity());
     Brain.Screen.setFillColor(vex::black);
     Brain.Screen.setPenColor(vex::white);
     this_thread::sleep_for(10000);

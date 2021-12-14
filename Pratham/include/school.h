@@ -40,54 +40,6 @@ class BASE
   void driveTo(double revolutions, int speed);
 };
 
-// Not complete
-class MECH
-{
-  private:
-  public:
-  MECH();
-  static PID pidLD;
-  static PID pidRD;
-  static void ToX();
-  static void ForX();
-  void ToX(double target);
-  void ForX(double target);
-  void aToX();
-  void aForX();
-  void aToX(double target);
-  void aForX(double target);
-};
-
-class HOLO
-{
-  private:
-  static void spinX(double x, vex::voltageUnits units);
-  static void spinY(double y, vex::voltageUnits units);
-  public:
-  HOLO();
-  static PID pidLF;
-  static PID pidLR;
-  static PID pidRF;
-  static PID pidRR;
-  static double toLFRR(double x, double y);
-  static double toLRRF(double x, double y);
-  static void setTarget(double x, double y);
-  static void To();
-  static void For();
-  void aTo();
-  void aFor();
-  void To(double x, double y);
-  void For(double x, double y);
-  void aTo(double x, double y);
-  void aFor(double x, double y);
-  void To(double target[]);
-  void For(double target[]);
-  void aTo(double target[]);
-  void aFor(double target[]);
-  void driveFor(double x, double y, int speed);
-  void driveFor(double target[], int speed);
-};
-
 class HDRIVE 
 {
   private:
