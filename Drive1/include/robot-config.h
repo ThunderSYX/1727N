@@ -4,16 +4,18 @@ extern brain Brain;
 
 // VEXcode devices
 extern controller Controller1;
+extern digital_out Piston;
 extern motor LF;
+extern motor LM;
 extern motor LB;
 extern motor RF;
+extern motor RM;
 extern motor RB;
+extern motor Arm;
 extern motor intake;
-extern motor arm;
-extern inertial Inertial;
 extern motor tilter;
 extern motor angler;
-extern digital_out Piston;
+extern inertial Inertial;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

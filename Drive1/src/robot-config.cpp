@@ -9,16 +9,18 @@ brain  Brain;
 
 // VEXcode device constructors
 controller Controller1 = controller(primary);
-motor LF = motor(PORT2, ratio18_1, false);
-motor LB = motor(PORT18, ratio18_1, false);
-motor RF = motor(PORT19, ratio18_1, true);
-motor RB = motor(PORT9, ratio18_1, true);
-motor intake = motor(PORT20, ratio18_1, true);
-motor arm = motor(PORT14, ratio18_1, true);
+digital_out Piston = digital_out(Brain.ThreeWirePort.B);
+motor LF = motor(PORT10, ratio18_1, false);
+motor LM = motor(PORT16, ratio18_1, true);
+motor LB = motor(PORT20, ratio18_1, true);
+motor RF = motor(PORT1, ratio18_1, true);
+motor RM = motor(PORT6, ratio18_1, false);
+motor RB = motor(PORT9, ratio18_1, false);
+motor Arm = motor(PORT5, ratio18_1, false);
+motor intake = motor(PORT18, ratio18_1, false);
+motor tilter = motor(PORT2, ratio18_1, false);
+motor angler = motor(PORT3, ratio18_1, false);
 inertial Inertial = inertial(PORT13);
-motor tilter = motor(PORT15, ratio18_1, true);
-motor angler = motor(PORT7, ratio18_1, false);
-digital_out Piston = digital_out(Brain.ThreeWirePort.A);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

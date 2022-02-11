@@ -10,16 +10,18 @@
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
-// LF                   motor         2               
-// LB                   motor         18              
-// RF                   motor         19              
+// Piston               digital_out   B               
+// LF                   motor         10              
+// LM                   motor         16              
+// LB                   motor         20              
+// RF                   motor         1               
+// RM                   motor         6               
 // RB                   motor         9               
-// intake               motor         20              
-// arm                  motor         14              
+// Arm                  motor         5               
+// intake               motor         18              
+// tilter               motor         2               
+// angler               motor         3               
 // Inertial             inertial      13              
-// tilter               motor         15              
-// angler               motor         7               
-// Piston               digital_out   A               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -37,9 +39,6 @@ const int maxVel = 10;
 const int armPct = 60;
 const int intakePct = 100;
 const int tilterPct = 45;
-const int midTilt = 200;
-const int lowTilt = 600;
-const int highArm = 1200;
 
 double drivePct = 1;
 
@@ -78,38 +77,16 @@ void pistonControl(){
   wait(20,msec);
 }
 
-void toggleSlow(){
-  if(slow){
-    slow = false;
-  }
-  else{
-    slow = true;
-  }
-}
-
 void armControl(){
-  arm.setStopping(hold);
+  Arm.setStopping(hold);
   if (Controller1.ButtonR1.pressing()){
-    arm.spin(fwd, armPct, pct);
+    Arm.spin(fwd, armPct, pct);
   }
   else if (Controller1.ButtonR2.pressing()){
-    arm.spin(reverse, armPct, pct);
+    Arm.spin(reverse, armPct, pct);
   }
-  else if (!arm.isSpinning()){
-    arm.stop();
-  }
-}
-
-void tilterMacro(){
-  tilter.setStopping(hold);
-  if(Controller1.ButtonDown.pressing()){
-    tilter.spinToPosition(-lowTilt, degrees, false);
-  }
-  else if(Controller1.ButtonUp.pressing()){
-    tilter.spinToPosition(-midTilt, degrees, false);
-  }
-  else if(Controller1.ButtonRight.pressing()){
-    tilter.spinToPosition(0, degrees, false);
+  else if (!Arm.isSpinning()){
+    Arm.stop();
   }
 }
 
@@ -362,15 +339,15 @@ void autonomous(void){
 }
 
 void usercontrol(void){
-  Controller1.ButtonA.pressed(toggleSlow);
   while (1){
     enablePID = false;
     userDrive();
-    armControl();
+    //armControl();
     //tilterMacro();
-    tilterControl();
-    intakeControl();  
-    anglerControl();
+    //tilterControl();
+    //intakeControl();  
+    //anglerControl();
+    pistonControl();
     wait(20, msec);
   }
 }
