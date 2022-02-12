@@ -11,32 +11,32 @@
 // [Name]               [Type]        [Port(s)]
 // Controller1          controller                    
 // Piston               digital_out   B               
-// LF                   motor         10              
-// LM                   motor         16              
+// LF                   motor         17              
+// LM                   motor         11              
 // LB                   motor         20              
 // RF                   motor         1               
 // RM                   motor         6               
 // RB                   motor         9               
-// Arm                  motor         5               
+// Arm                  motor         2               
 // intake               motor         18              
-// tilter               motor         2               
+// tilter               motor         12              
 // angler               motor         3               
-// Inertial             inertial      13              
+// Inertial             inertial      7               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
 using namespace vex;
 competition Competition;
  
-motor_group leftDrive(LF, LB);
-motor_group rightDrive(RF, RB);
-motor_group tankDrive(LF, LB, RF, RB);
+motor_group leftDrive(LF, LM, LB);
+motor_group rightDrive(RF, RM, RB);
+motor_group tankDrive(LF, LM, LB, RF, RM, RB);
 
 bool intakeTrue = false;
 
 const int maxVel = 10;
 
-const int armPct = 60;
+const int armPct = 70;
 const int intakePct = 100;
 const int tilterPct = 45;
 
@@ -67,13 +67,22 @@ void userDrive(){
     leftDrive.spin(fwd, leftNewPct, pct);
 }
 
+bool pistonDown = false;
+
 void pistonControl(){
   if(Controller1.ButtonUp.pressing()){
+    pistonDown = true;
+  }
+  else if (Controller1.ButtonDown.pressing()){
+    pistonDown = false; 
+  }
+  if (pistonDown){
     Piston.set(true);
   }
   else {
     Piston.set(false);
   }
+
   wait(20,msec);
 }
 
@@ -342,7 +351,7 @@ void usercontrol(void){
   while (1){
     enablePID = false;
     userDrive();
-    //armControl();
+    armControl();
     //tilterMacro();
     //tilterControl();
     //intakeControl();  
