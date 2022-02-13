@@ -15,7 +15,7 @@ extern motor Arm;
 extern motor intake;
 extern motor tilter;
 extern motor angler;
-extern inertial Inertial;
+extern digital_out PistonBack;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

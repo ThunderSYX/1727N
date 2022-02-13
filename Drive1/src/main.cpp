@@ -21,7 +21,7 @@
 // intake               motor         18              
 // tilter               motor         12              
 // angler               motor         3               
-// Inertial             inertial      7               
+// PistonBack           digital_out   A               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -36,7 +36,7 @@ bool intakeTrue = false;
 
 const int maxVel = 10;
 
-const int armPct = 70;
+const int armPct = 90;
 const int intakePct = 100;
 const int tilterPct = 45;
 
@@ -68,12 +68,13 @@ void userDrive(){
 }
 
 bool pistonDown = false;
+bool pistonBackDown = false;
 
 void pistonControl(){
-  if(Controller1.ButtonUp.pressing()){
+  if(Controller1.ButtonL2.pressing()){
     pistonDown = true;
   }
-  else if (Controller1.ButtonDown.pressing()){
+  else if (Controller1.ButtonL1.pressing()){
     pistonDown = false; 
   }
   if (pistonDown){
@@ -81,6 +82,19 @@ void pistonControl(){
   }
   else {
     Piston.set(false);
+  }
+
+  if(Controller1.ButtonDown.pressing()){
+    pistonBackDown = true;
+  }
+  else if (Controller1.ButtonUp.pressing()){
+    pistonBackDown = false; 
+  }
+  if (pistonBackDown){
+    PistonBack.set(true);
+  }
+  else {
+    PistonBack.set(false);
   }
 
   wait(20,msec);
@@ -197,7 +211,7 @@ double gError;
 int restTime;
 int totalTime;
 
-void gturn(double angle){
+/*void gturn(double angle){
   while(true){
     restTime = 0;
     gError = angle - Inertial.orientation(yaw, degrees);
@@ -216,6 +230,7 @@ void gturn(double angle){
     task::sleep(20);
   }
 }
+*/
 
 
 double leftPosition(){
@@ -257,7 +272,7 @@ void resetDrive(){
 double time1 = 0;
 double lFinalPower;
 double rFinalPower;
-
+/*
 void PID(int desVal, double desTurn){
   while(true){
 
@@ -329,22 +344,63 @@ void PID(int desVal, double desTurn){
   vex::task::sleep(20);
   }
 }
-
+*/
 void move2(double dist, int vel){
   LF.setVelocity(vel, pct);
   LB.setVelocity(vel, pct);
+  LM.setVelocity(vel, pct);
   RF.setVelocity(vel, pct);
+  RM.setVelocity(vel, pct);
   RB.setVelocity(vel, pct);
   LF.spinFor(fwd, dist, degrees, false);
+  LM.spinFor(fwd, dist, degrees, false);
   LB.spinFor(fwd, dist, degrees, false);
   RF.spinFor(fwd, dist, degrees, false);
+  RM.spinFor(fwd, dist, degrees, false);
   RB.spinFor(fwd, dist, degrees);
 }
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
- 
+  /*PistonBack.set(false);
+  wait(1500, msec);
+  move2(-100, 50);
+  PistonBack.set(true);
+  wait(500, msec);
+  move2(300, 60);
+*/
+  
+  /*
+  Piston.set(false);
+  move2(1000, 80);
+  move2(100, 20);
+  wait(400, msec);
+  Piston.set(true);
+  wait(400, msec);
+  PistonBack.set(false);
+  move2(-1000, 40);
+  */
+
+  Piston.set(false);
+  move2(1000, 80);
+  move2(100, 20);
+  wait(400, msec);
+  Piston.set(true);
+  wait(400, msec);
+  move2(800, 60);
+  wait(500, msec);
+  Arm.spinToPosition(700, degrees);
+  LF.spinFor(fwd, 800, degrees, false);
+  LM.spinFor(fwd, 800, degrees, false);
+  LB.spinFor(fwd, 800, degrees, false);
+  RF.spinFor(fwd, 1100, degrees, false);
+  RM.spinFor(fwd, 1100, degrees, false);
+  RB.spinFor(fwd, 1100, degrees);
+  wait(300, msec);
+  Piston.set(false);
+  wait(500, msec);
+  move2(-400, 70);
 }
 
 void usercontrol(void){
@@ -362,16 +418,18 @@ void usercontrol(void){
 }
 
 int main(){
- 
+  Piston.set(true);
+  PistonBack.set(true);
+  Arm.setPosition(0, degrees);
   Brain.Screen.setFont(mono40);
-  Inertial.startCalibration();
+  //Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
   //autonButton(280, 80, 75, 75, "Auton1");
   //autonButton(200, 80, 75, 75, "Auton2");
   //autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
-    Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
+    //Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
     Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
     //Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
