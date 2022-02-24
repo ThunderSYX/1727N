@@ -211,18 +211,18 @@ double gError;
 int restTime;
 int totalTime;
 
-/*void gturn(double angle){
+void gturn(double angle){
   while(true){
     restTime = 0;
     gError = angle - Inertial.orientation(yaw, degrees);
     double speed = gError * gkP;
     if((gError < 3.0 && gError > -3.0)){
-      //restTime+=20;
-      //if (restTime >= 300){
+      restTime+=20;
+      if (restTime >= 300){
         break;
-      //}
+      }
     }
-    if(totalTime /1000 > 0.6){
+    else if(totalTime /1000 > 2){
       break;
     }
     totalTime+=20;
@@ -230,8 +230,6 @@ int totalTime;
     task::sleep(20);
   }
 }
-*/
-
 
 double leftPosition(){
   return (LF.position(degrees) + LB.position(degrees))/2;
@@ -252,7 +250,7 @@ double kP = 0.7;
 double kI = 0.0;
 double kD = 0.07;
 
-double turnkP = 0.3;
+double turnkP = 0.0;
 double turnkI = 0.0;
 double turnkD = 0.0;
 
@@ -272,7 +270,7 @@ void resetDrive(){
 double time1 = 0;
 double lFinalPower;
 double rFinalPower;
-/*
+
 void PID(int desVal, double desTurn){
   while(true){
 
@@ -344,7 +342,7 @@ void PID(int desVal, double desTurn){
   vex::task::sleep(20);
   }
 }
-*/
+
 void move2(double dist, int vel){
   LF.setVelocity(vel, pct);
   LB.setVelocity(vel, pct);
@@ -363,6 +361,8 @@ void move2(double dist, int vel){
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
+  PID(2000, 0.0);
+
   /*PistonBack.set(false);
   wait(1500, msec);
   move2(-100, 50);
@@ -382,6 +382,7 @@ void autonomous(void){
   move2(-1000, 40);
   */
 
+  /*
   Piston.set(false);
   move2(1000, 80);
   move2(100, 20);
@@ -401,6 +402,7 @@ void autonomous(void){
   Piston.set(false);
   wait(500, msec);
   move2(-400, 70);
+  */
 }
 
 void usercontrol(void){
