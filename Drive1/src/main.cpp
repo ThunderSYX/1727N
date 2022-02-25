@@ -206,24 +206,23 @@ void gturn(double angle) {
 }
 */
 
-double gkP = 0.4;
+double gkP = 0.5;
 double gError;
 int restTime;
 int totalTime;
 
 void gturn(double angle){
   while(true){
-    restTime = 0;
     gError = angle - Inertial.orientation(yaw, degrees);
     double speed = gError * gkP;
-    if((gError < 3.0 && gError > -3.0)){
-      restTime+=20;
-      if (restTime >= 300){
+    if((gError < 2.0 && gError > -2.0)){
+      if (restTime/100 >= 3){
         break;
       }
+      restTime += 20;
     }
-    else if(totalTime /1000 > 2){
-      break;
+    else {
+      restTime = 0;
     }
     totalTime+=20;
     setTank(speed, -speed);
@@ -232,11 +231,11 @@ void gturn(double angle){
 }
 
 double leftPosition(){
-  return (LF.position(degrees) + LB.position(degrees))/2;
+  return (LF.position(degrees) + LM.position(degrees) + LB.position(degrees))/3;
 }
 
 double rightPosition(){
-  return (RF.position(degrees) + RB.position(degrees))/2;
+  return (RM.position(degrees) + RB.position(degrees))/2;
 }
 
 
@@ -248,7 +247,7 @@ bool enablePID = false;
 
 double kP = 0.7;
 double kI = 0.0;
-double kD = 0.07;
+double kD = 0.0;
 
 double turnkP = 0.0;
 double turnkI = 0.0;
@@ -265,6 +264,8 @@ void resetDrive(){
   RF.setPosition(0, degrees);
   LB.setPosition(0, degrees);
   RB.setPosition(0, degrees);
+  LM.setPosition(0, degrees);
+  RM.setPosition(0, degrees);
 }
 
 double time1 = 0;
@@ -318,8 +319,8 @@ void PID(int desVal, double desTurn){
     rightPower = maxVel;
   }
 
-  lFinalPower = leftPower - turnPower;
-  rFinalPower = rightPower + turnPower;
+  lFinalPower = leftPower;// - turnPower;
+  rFinalPower = rightPower;// + turnPower;
 
   setTank(lFinalPower, rFinalPower);
   lPrevError = lError;
@@ -329,8 +330,10 @@ void PID(int desVal, double desTurn){
 
   if((lError < 4 && lError > -4) && (rError < 4 && rError > -4)){
     LF.stop(hold);
+    LM.stop(hold);
     LB.stop(hold);
     RF.stop(hold);
+    RM.stop(hold);
     RB.stop(hold);
     break;
   }
@@ -361,7 +364,12 @@ void move2(double dist, int vel){
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
 void autonomous(void){
-  PID(2000, 0.0);
+  //PID(2000, 0.0);
+  PistonBack.set(true);
+  gturn(90);
+  resetDrive();
+  //move2(200, 20);
+  PID(200, 90.0);
 
   /*PistonBack.set(false);
   wait(1500, msec);
@@ -424,14 +432,14 @@ int main(){
   PistonBack.set(true);
   Arm.setPosition(0, degrees);
   Brain.Screen.setFont(mono40);
-  //Inertial.startCalibration();
+  Inertial.startCalibration();
   vex::this_thread::sleep_for(2000);
   //autonButton(280, 80, 75, 75, "Auton1");
   //autonButton(200, 80, 75, 75, "Auton2");
   //autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
-    //Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
+    Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
     Brain.Screen.printAt( 10, 125, "Left %6.1f", leftPosition());
     Brain.Screen.printAt( 10, 200, "Right %6.1f", rightPosition());
     //Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);
