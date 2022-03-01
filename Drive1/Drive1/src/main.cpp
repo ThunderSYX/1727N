@@ -49,19 +49,17 @@ void pre_auton(void){
 /////=================================== Driver Control  ===================================/////
 
 bool slow = false;
+bool latch = false;
 
 void userDrive(){
   float maxSpeed = 100;
   float leftPct = (Controller1.Axis3.position()*drivePct)/maxSpeed;
   float rightPct = (Controller1.Axis2.position()*drivePct)/maxSpeed;
-
-  float leftNewPct = leftPct * leftPct *leftPct*100*drivePct;
-  float rightNewPct = rightPct *rightPct *rightPct*100*drivePct;
   
-  if (Controller1.ButtonA.pressing()){
+  if (Controller1.ButtonA.pressing() && !slow){
    slow = true;
   }
-  if (Controller1.ButtonA.pressing() && slow){
+  if (Controller1.ButtonRight.pressing() && slow){
    slow = false;
   }
   
@@ -71,6 +69,8 @@ void userDrive(){
   else{
     drivePct = 1;
   }
+    float leftNewPct = leftPct * leftPct *leftPct*100*drivePct;
+    float rightNewPct = rightPct *rightPct *rightPct*100*drivePct;
     rightDrive.spin(fwd, rightNewPct, pct);
     leftDrive.spin(fwd, leftNewPct, pct);
 }
@@ -122,11 +122,11 @@ void armControl(){
 }
 
 void intakeControl(){
-  if (Controller1.ButtonX.pressing() && !intakeTrue){
+  if (Controller1.ButtonX.pressing()){
    intakeTrue = true;
    this_thread::sleep_for(20);
   }
-  else if (Controller1.ButtonB.pressing() && intakeTrue){
+  else if (Controller1.ButtonB.pressing()){
    intakeTrue = false;
    this_thread::sleep_for(20);
   }
@@ -138,7 +138,7 @@ void intakeControl(){
     intake.stop();
   }
   if(Controller1.ButtonY.pressing()) {
-    intake.spin(reverse, 100, pct);
+    intake.spin(fwd, 100, pct);
   }
   else {
     intake.setStopping(coast);
@@ -192,36 +192,12 @@ void gturn(double angle) {
 }
 */
 
-double gkP = 0.5;
-double gError;
-int restTime;
-int totalTime;
-
-void gturn(double angle){
-  while(true){
-    gError = angle - Inertial.orientation(yaw, degrees);
-    double speed = gError * gkP;
-    if((gError < 2.0 && gError > -2.0)){
-      if (restTime/100 >= 3){
-        break;
-      }
-      restTime += 20;
-    }
-    else {
-      restTime = 0;
-    }
-    totalTime+=20;
-    setTank(speed, -speed);
-    task::sleep(20);
-  }
-}
-
 double leftPosition(){
-  return (LF.position(degrees) + LM.position(degrees) + LB.position(degrees))/3;
+  return LShaft.position(degrees);
 }
 
 double rightPosition(){
-  return (RM.position(degrees) + RB.position(degrees))/2;
+  return -RShaft.position(degrees);
 }
 
 
@@ -231,11 +207,11 @@ double rightPosition(){
 
 bool enablePID = false;
 
-double kP = 0.7;
+double kP = 0.6;
 double kI = 0.0;
-double kD = 0.0;
+double kD = 1.5;
 
-double turnkP = 0.0;
+double turnkP = 0.1;
 double turnkI = 0.0;
 double turnkD = 0.0;
 
@@ -246,12 +222,8 @@ double lP, rP, lI, rI, lD, rD;
 double turnError, turnTotalError = 0, turnPrevError = 0, turnDrv;
 
 void resetDrive(){
-  LF.setPosition(0, degrees);
-  RF.setPosition(0, degrees);
-  LB.setPosition(0, degrees);
-  RB.setPosition(0, degrees);
-  LM.setPosition(0, degrees);
-  RM.setPosition(0, degrees);
+  LShaft.setPosition(0, degrees);
+  RShaft.setPosition(0, degrees);
 }
 
 double time1 = 0;
@@ -259,6 +231,8 @@ double lFinalPower;
 double rFinalPower;
 
 void PID(int desVal, double desTurn){
+  resetDrive();
+  int restTime = 0;
   while(true){
 
   ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>////
@@ -305,27 +279,33 @@ void PID(int desVal, double desTurn){
     rightPower = maxVel;
   }
 
-  lFinalPower = leftPower;// - turnPower;
-  rFinalPower = rightPower;// + turnPower;
+  lFinalPower = leftPower - turnPower;
+  rFinalPower = rightPower + turnPower;
 
   setTank(lFinalPower, rFinalPower);
   lPrevError = lError;
   rPrevError = rError;
   turnPrevError = turnError;
 
-
-  if((lError < 4 && lError > -4) && (rError < 4 && rError > -4)){
-    LF.stop(hold);
-    LM.stop(hold);
-    LB.stop(hold);
-    RF.stop(hold);
-    RM.stop(hold);
-    RB.stop(hold);
-    break;
-  }
-  else if (time1/1000 > 3){
-    break;
-  }
+  if((lError <= 2 && lError >= -2) && (rError <= 2 && rError >= -2)){
+    if (restTime/100 >= 2){
+      //LF.stop(hold);
+      //LM.stop(hold);
+      //LB.stop(hold);
+      //RF.stop(hold);
+      //RM.stop(hold);
+      //RB.stop(hold);
+        break;
+      }
+      restTime += 20;
+    }
+    else {
+      restTime = 0;
+    }
+  
+    /*if (time1/1000 > 3){
+      break;
+    }*/
 
   time1+=20;
   vex::task::sleep(20);
@@ -349,13 +329,74 @@ void move2(double dist, int vel){
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
+double gkP = 0.6;
+
+void gturn(double angle){ 
+  double gError;
+  int restTime = 0;
+  int totalTime = 0;
+  bool right;
+  if (angle > 0){
+    right = true;
+  }
+  else if (angle < 0){
+    right = false;
+  }
+  while(true){
+    if (right){
+      gError = angle - Inertial.heading();
+    }
+    else {
+      gError = Inertial.yaw() - angle;
+    }
+    double speed = gError * gkP;
+    if((gError < 1.5 && gError > -1.5)){
+      if (restTime/100 >= 3){
+        break;
+      }
+      restTime += 20;
+    }
+    else {
+      restTime = 0;
+    }
+    if (totalTime / 1000 > 2){
+      break;
+    }
+    totalTime+=20;
+    if (right){
+      setTank(speed, -speed);
+    }
+    else {
+      setTank(-speed, speed);
+    }
+      task::sleep(20);
+  }
+}
+
 void autonomous(void){
   //PID(2000, 0.0);
-  PistonBack.set(true);
-  gturn(90);
   resetDrive();
+  Piston.set(false);
+  PistonBack.set(false);
+
+  PID(850, 0.0);
+  move2(100, 20);
+  Piston.set(true);
+  
+  wait(300, msec);
+  PID(-600, 0.0);
+  gturn(-90);
+  move2(-280, 30);
+  //PID(-210, -90.0);
+  PistonBack.set(true);
+  wait(750, msec);
+  PID(400, -90.0);
+  Arm.spinFor(fwd, 400, degrees);
+  intake.setVelocity(100, pct);
+  intake.spin(reverse);
+
   //move2(200, 20);
-  PID(200, 90.0);
+
 
   /*PistonBack.set(false);
   wait(1500, msec);
@@ -422,7 +463,7 @@ int main(){
   //autonButton(360, 80, 75, 75, "Auton3");
   
   while(1){
-    Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.orientation(yaw, degrees));
+    Brain.Screen.printAt( 10, 50, "Angle %6.1f", Inertial.heading());
     Brain.Screen.printAt( 10, 125, "Left %6.1f", LShaft.position(degrees));
     Brain.Screen.printAt( 10, 200, "Right %6.1f", -RShaft.position(degrees));
     //Brain.Screen.printAt( 250, 125, "lER %6.1f", lError);

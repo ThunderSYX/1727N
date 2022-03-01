@@ -19,7 +19,7 @@ motor RB = motor(PORT14, ratio18_1, false);
 motor Arm = motor(PORT2, ratio18_1, false);
 motor intake = motor(PORT3, ratio18_1, false);
 motor tilter = motor(PORT12, ratio18_1, false);
-motor angler = motor(PORT3, ratio18_1, false);
+motor angler = motor(PORT13, ratio18_1, false);
 digital_out PistonBack = digital_out(Brain.ThreeWirePort.A);
 inertial Inertial = inertial(PORT7);
 
