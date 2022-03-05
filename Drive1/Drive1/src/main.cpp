@@ -34,7 +34,7 @@ motor_group tankDrive(LF, LM, LB, RF, RM, RB);
 
 bool intakeTrue = false;
 
-const int maxVel = 10;
+int maxVel = 10;
 
 const int armPct = 90;
 const int intakePct = 100;
@@ -207,11 +207,11 @@ double rightPosition(){
 
 bool enablePID = false;
 
-double kP = 0.6;
+double kP = 0.7;
 double kI = 0.0;
-double kD = 1.5;
+double kD = 2;
 
-double turnkP = 0.1;
+double turnkP = 0.2;
 double turnkI = 0.0;
 double turnkD = 0.0;
 
@@ -229,10 +229,14 @@ void resetDrive(){
 double time1 = 0;
 double lFinalPower;
 double rFinalPower;
+double maxTime = 1;
+
+bool isHeading = false;
 
 void PID(int desVal, double desTurn){
   resetDrive();
   int restTime = 0;
+  int totalTime = 0;
   while(true){
 
   ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>////
@@ -264,8 +268,12 @@ void PID(int desVal, double desTurn){
   ///>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>////
   ///////////////////////////    Turning    ///////////////////
   ///<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<////
-
-  turnError = Inertial.orientation(yaw, degrees) - desTurn;
+  if(!isHeading){
+     turnError = Inertial.orientation(yaw, degrees) - desTurn;
+  }
+  else {
+     turnError = Inertial.heading() - desTurn;
+  }
   turnTotalError += turnError;
   turnDrv = turnError - turnPrevError;
   double turnPower = (turnError * turnkP + turnTotalError * turnkI + turnDrv * turnkD);
@@ -288,7 +296,7 @@ void PID(int desVal, double desTurn){
   turnPrevError = turnError;
 
   if((lError <= 2 && lError >= -2) && (rError <= 2 && rError >= -2)){
-    if (restTime/100 >= 2){
+    if (restTime/100 >= 1.5){
       //LF.stop(hold);
       //LM.stop(hold);
       //LB.stop(hold);
@@ -303,11 +311,11 @@ void PID(int desVal, double desTurn){
       restTime = 0;
     }
   
-    /*if (time1/1000 > 3){
+    if (totalTime/1000 > maxTime){
       break;
-    }*/
+    }
 
-  time1+=20;
+  totalTime+=20;
   vex::task::sleep(20);
   }
 }
@@ -329,12 +337,12 @@ void move2(double dist, int vel){
 
 /////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>/////
 
-double gkP = 0.6;
+double gkP = 1.2;
 
-void gturn(double angle){ 
+void gturn(double angle){     
   double gError;
-  int restTime = 0;
-  int totalTime = 0;
+  double restTime = 0;
+  double totalTime = 0;
   bool right;
   if (angle > 0){
     right = true;
@@ -350,8 +358,8 @@ void gturn(double angle){
       gError = Inertial.yaw() - angle;
     }
     double speed = gError * gkP;
-    if((gError < 1.5 && gError > -1.5)){
-      if (restTime/100 >= 3){
+    if((gError < 1 && gError > -1)){
+      if (restTime/100 >= 4){
         break;
       }
       restTime += 20;
@@ -359,7 +367,7 @@ void gturn(double angle){
     else {
       restTime = 0;
     }
-    if (totalTime / 1000 > 2){
+    if (totalTime / 1000 > 1){
       break;
     }
     totalTime+=20;
@@ -373,71 +381,217 @@ void gturn(double angle){
   }
 }
 
-void autonomous(void){
-  //PID(2000, 0.0);
+void leftturn(double angle){
+  int restTime = 0;
+  int totalTime = 0;
+  while(true){
+    double gError = angle - Inertial.orientation(yaw, degrees);
+    double speed = gError * gkP;
+    if((gError < 1 && gError > -1)){
+      if (restTime/100 >= 4){
+        break;
+      }
+      restTime += 20;
+    }
+    else {
+      restTime = 0;
+    }
+    totalTime+=20;
+    setTank(speed, -speed);
+    task::sleep(20);
+  }
+}
+
+void awpPoint(){
+  maxVel = 6;
+  Arm.spinFor(fwd, 200, degrees);
+  
+  intake.spin(reverse);
+  wait(800, msec);
+  intake.stop();
+
+  PID(200, 0);
+  wait(300, msec);
+  leftturn(90);
+  wait(300, msec);
+  PID(450, 90);
+  wait(300, msec);
+  gturn(0);
+  maxVel = 4;
+  PID(-2100, 0);
+  wait(500, msec);
+  move2(-100, 45);
+  wait(500, msec);
+  PistonBack.set(true);
+  wait(500, msec);
+  intake.spin(reverse);
+  PID(400, 0);
+  PistonBack.set(false);
+  leftturn(45);
+}
+
+void leftSide(){
   resetDrive();
   Piston.set(false);
   PistonBack.set(false);
 
-  PID(850, 0.0);
-  move2(100, 20);
+  //PID(900, 0.0);
+  move2(880, 90);
+  wait(300, msec);
+  move2(80, 35);
+  Piston.set(true);
+
+  PID(-900, 0.0);
+  gturn(-90);
+
+  //PID(-80, -90.0);
+  move2(-80, 45);
+  Arm.spinFor(fwd, 200, degrees);
+  intake.spin(reverse);
+  wait(2, sec);
+  move2(400, 45);
+  gturn(0);
+}
+
+void rightSide(){
+  resetDrive();
+  Piston.set(false);
+  PistonBack.set(false);
+
+  //PID(850, 0.0);
+  move2(830, 100);
+  move2(100, 45);
   Piston.set(true);
   
   wait(300, msec);
-  PID(-600, 0.0);
-  gturn(-90);
-  move2(-280, 30);
+  PID(-550, 0.0);
+  leftturn(-90);
+  move2(-300, 30);
   //PID(-210, -90.0);
   PistonBack.set(true);
   wait(750, msec);
   PID(400, -90.0);
-  Arm.spinFor(fwd, 400, degrees);
+  //Arm.spinFor(fwd, 400, degrees);
   intake.setVelocity(100, pct);
   intake.spin(reverse);
-
-  //move2(200, 20);
-
-
-  /*PistonBack.set(false);
-  wait(1500, msec);
-  move2(-100, 50);
-  PistonBack.set(true);
-  wait(500, msec);
-  move2(300, 60);
-*/
+  wait(700, msec);
   
-  /*
-  Piston.set(false);
-  move2(1000, 80);
-  move2(100, 20);
-  wait(400, msec);
-  Piston.set(true);
-  wait(400, msec);
+  //Arm.spinFor(reverse, 380, degrees);
   PistonBack.set(false);
-  move2(-1000, 40);
-  */
+  intake.stop();
+  PID(400, -90.0);
+  Piston.set(false);
+  
+  
+  PID(-300, -90.0);
+  gturn(-45);
+  PID(850, -45.0);
+}
 
-  /*
+void skills(){
+  resetDrive();
   Piston.set(false);
-  move2(1000, 80);
-  move2(100, 20);
+  maxVel = 6;
+  move2(-60, 30);
+  PistonBack.set(true);
   wait(400, msec);
+  PID(100, 0.0);
+  gturn(93);
+  maxTime = 10;
+  PID(1900, 93.0);
   Piston.set(true);
+  
+  //PID(1050, 90.0);
+  gturn(270);
+  move2(-150, 45);
+  PistonBack.set(false);
+  move2(120, 45);
+  wait(500, msec);
+  gturn(180);
+  maxTime = 1;
+  //isHeading = true;
+  //PID(-500, 180);
+  move2(-450, 60);
+  PistonBack.set(true);
+  gturn(180);
+  //PID(900, 180);
+  move2(1200, 50);
+
+  //isHeading = false;
   wait(400, msec);
-  move2(800, 60);
-  wait(500, msec);
-  Arm.spinToPosition(700, degrees);
-  LF.spinFor(fwd, 800, degrees, false);
-  LM.spinFor(fwd, 800, degrees, false);
-  LB.spinFor(fwd, 800, degrees, false);
-  RF.spinFor(fwd, 1100, degrees, false);
-  RM.spinFor(fwd, 1100, degrees, false);
-  RB.spinFor(fwd, 1100, degrees);
-  wait(300, msec);
+  Arm.setVelocity(80, pct);
+  Arm.spinFor(fwd, 1400, degrees);
+
+  gturn(90);
+  move2(300, 45);
+  Arm.spinFor(reverse, 400, degrees);
   Piston.set(false);
+  Arm.spinFor(fwd, 400, degrees);
+  wait(400, msec);
+  move2(-300, 45);
+  leftturn(-90);
   wait(500, msec);
-  move2(-400, 70);
+  Arm.spinToPosition(0, degrees);
+  move2(2000, 60);
+
+  Piston.set(true);
+  gturn(0);
+  Piston.set(false);
+  gturn(180);
+  PistonBack.set(false);
+
+  move2(800, 45);
+  Piston.set(true);
+  gturn(90);
+  PID(1200, 90);
+
+  Piston.set(false);
+  PistonBack.set(false);
+  /*
+  isHeading = true;
+  PID(600, 180);
+  Piston.set(true);
+  PID(-600, 180);
+  isHeading = false;
+  leftturn(-90);
+  Piston.set(true);
   */
+/*
+  wait(300, msec);
+  PistonBack.set(false);
+  gturn(45);//penis envy
+  //isHeading = true;
+  
+  maxTime = 10;
+  maxVel = 5;
+  intake.spin(reverse);
+  PID(-2300, 45);
+  PID(300, 45);
+  gturn(0);
+  isHeading = false;
+  PID(-380, 0.0);
+  wait(400, msec);
+  PistonBack.set(true);
+  wait(400, msec);
+  PID(1000, 0.0);
+  gturn(-90);
+  isHeading = true;
+  move2(300, 45);
+  wait(400, msec);
+  Piston.set(false);
+  move2(-200, 45);
+  */
+}
+
+void autonomous(void){
+  intake.setVelocity(60, pct);
+  isHeading = false;
+  maxTime = 1;
+  
+  //leftSide();
+  //rightSide();
+  //awpPoint();
+  skills();
 }
 
 void usercontrol(void){
@@ -453,7 +607,7 @@ void usercontrol(void){
 
 int main(){
   Piston.set(true);
-  PistonBack.set(true);
+  PistonBack.set(false);
   Arm.setPosition(0, degrees);
   Brain.Screen.setFont(mono40);
   Inertial.startCalibration();
@@ -478,6 +632,7 @@ int main(){
     //Brain.Screen.printAt(140,130,"  | |    / /  .'____.'    / /    | |\\ \\| |   ");
     //Brain.Screen.printAt(140,150," _| |_  / /  / /_____    / /    _| |_\\   |_  ");
     //Brain.Screen.printAt(140,170,"|_____|/_/   |_______|  /_/    |_____|\\____| ");
+    //Brain.Screen.printAt(140, 190, "Penis Envy");
     Brain.Screen.setFont(mono40);
 
     vex::this_thread::sleep_for(50);
